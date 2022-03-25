@@ -1,0 +1,48 @@
+Entropy_bytes: b'\xacVp\x11q\x12Lz\x04\x8e\xa1N\xc6#\xf2\xe8\xf3\xc9(ar\xbdv\xe6o\xb84\xeb\x96\x8b\xfb\xd2'
+Entropy_bits: bitarray('1010110001010110011100000001000101110001000100100100110001111010000001001000111010100001010011101100011000100011111100101110100011110011110010010010100001100001011100101011110101110110111001100110111110111000001101001110101110010110100010111111101111010010')
+checksum_length: 8
+hash_bytes: b"\x94\xe5\xc6\xce\x00\xd7\x0bu\x98\x07k/]'y\xb2\x0fKzo\xa1w\xfa\xa8\x0b\x15f\x8bs)\x9f\xe3"
+hash_bits: bitarray('1001010011100101110001101100111000000000110101110000101101110101100110000000011101101011001011110101110100100111011110011011001000001111010010110111101001101111101000010111011111111010101010000000101100010101011001101000101101110011001010011001111111100011')
+checksum: bitarray('10010100')
+len(entropy_bits): 256
+entropy_bits.extend(checksum): 264
+grouped_bits: (bitarray('10101100010'), bitarray('10110011100'), bitarray('00000100010'), bitarray('11100010001'), bitarray('00100100110'), bitarray('00111101000'), bitarray('00010010001'), bitarray('11010100001'), bitarray('01001110110'), bitarray('00110001000'), bitarray('11111100101'), bitarray('11010001111'), bitarray('00111100100'), bitarray('10010100001'), bitarray('10000101110'), bitarray('01010111101'), bitarray('01110110111'), bitarray('00110011011'), bitarray('11101110000'), bitarray('01101001110'), bitarray('10111001011'), bitarray('01000101111'), bitarray('11101111010'), bitarray('01010010100'))24
+indices: (1378, 1436, 34, 1809, 294, 488, 145, 1697, 630, 392, 2021, 1679, 484, 1185, 1070, 701, 951, 411, 1904, 846, 1483, 559, 1914, 660)
+mnemonic_words: ('pustina', 'roucho', 'bahno', 'velmoc', 'drsnost', 'imunita', 'cenina', 'topinka', 'komunita', 'havran', 'zoubek', 'tenor', 'idylka', 'pedagog', 'odvaha', 'kulich', 'neduh', 'hloh', 'vyslovit', 'mincovna', 'secese', 'kapela', 'vyvrhel', 'kousek')
+mnemonic_string: pustina roucho bahno velmoc drsnost imunita cenina topinka komunita havran zoubek tenor idylka pedagog odvaha kulich neduh hloh vyslovit mincovna secese kapela vyvrhel kousek
+seed: b'gc\xd6A\x82\x90\x99\x8e\x98~\x8b?\x16\xa4\t\xe90\xb1O%zu$\xf2\xc5\n\xee\xccA\x1d\xab\xc7\x94\x9bz\x82\x98\x84N\xf0\x8f\xa2\xe6\x92\xcb\xdc\x0b\x01\xf1\xc6\x0c\xf4W\x83\x0c\x96\xacu=\x8d~O\xcf2'
+len(seed): 64
+(seed.hex()): 6763d6418290998e987e8b3f16a409e930b14f257a7524f2c50aeecc411dabc7949b7a8298844ef08fa2e692cbdc0b01f1c60cf457830c96ac753d8d7e4fcf32
+master private key (hex): 0x3e188d3fb99aef543237e115cd70dc2c639a75f927c961cc512093ccc5309064
+master chain code (bytes): b'D\xfcE&\x03\xc7nPY\x1bV\x97\xca\xa4\x856\xb7I\xee\x93DG\x1bc\xc7\x1ct\x9cu\xc4\x08H'
+root key: xprv9s21ZrQH143K2kC8sD8aY7cTNzj735bFG312spt1YhAtNB2ymXBZpA2t55wP1XmLxNY9HrHNg8vaeGmnoAtPuQpdU3vGHKDstMCwwMfQGVa
+depth: 1
+child_number: 2147483692
+parent_fingerprint: b'\xaa\xeb\xdc$'
+private_key: 95818203929461515925972548413806080687766491898252418670276163651666084114696
+chain_code: b'$\x03\x06\xf4d\\\xa1\xc78*|\x11\xd4\xc2B\x07./\x00\x81\xbb>\xf7\xeft\xea\xeb\xa3\x18\x17\xa6\x94'
+depth: 2
+child_number: 2147483708
+parent_fingerprint: b'\x1f\x8a\x96b'
+private_key: 78234827964283504613970147996904584132464874755703886423662445388317928132092
+chain_code: b'k\x05\xfa<\x13\x93\xaf\x95$G\x96\x96\xbf \x89z]\xcc\xe8\xd3\xd5\xbe\x18\x01m\x11\x17\xc03\xc7\xa6\xd7'
+depth: 3
+child_number: 2147483648
+parent_fingerprint: b'\x7f\xa7\x99\xad'
+private_key: 38234303596553378052674075643179950285850444250453668764776693133276825909209
+chain_code: b'B\x00<z]\x88c\xc8\xc2\nb}\xf8\x85\x19\x81\x89\xcc\xa6)\xe4{\xd1\xc1\xb3\x8a\xa4\xb2\xb5\x07\xc6\xd0'
+depth: 4
+child_number: 0
+parent_fingerprint: b'\xddi\xd0\xd8'
+private_key: 75479561751546974881873242539697643329322108456683768184999389876201759201564
+chain_code: b'\xd0\xcdY\xc2\xf5\xaaQC\x01\x81.\xaaK\xb0\x14\x07\xd62\xcfO\x86\xaf\xe8\xc5\x10\x12d\xc3E\xcc\x03\xed'
+depth: 5
+child_number: 0
+parent_fingerprint: b'xF\x0b\xbe'
+private_key: 87531038239523552470889602612189555256521248638045276798032441707377886766868
+chain_code: b"\x8a\xf3\xc4\x9c\xc9\xeblS\xb2\xc4\x13\xc5m'\x0b\xa2{I7\x84a+\xacw\xfa\xfa\r^\xbd_\xb2m"
+xprv: xprvA3JxkCMfygAaabuNJ5J19MC5FCzKBu7AfybX9ZiadN41cAwc3aURU2F2HftQLJdPrYadCLdx4BfDk7SvW5tcnQTupUUwgFkg11znKKSsuAV
+private key: 0xc184cfde24165ffe16a927b3494134bce22cdc536d5a454d459b05b7d8dc2714
+Point object: <ecdsa.ellipticcurve.PointJacobi object at 0x000001D0AEF876D8>
+public key (hex): 0x021bd8aa4bce9c815fc5d02040f7b1878373bc10acd5e56b6af582da62cc745565
+address: 0x8f78875cfc4d450fa5844c002b779508b6586d2d

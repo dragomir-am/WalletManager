@@ -1,0 +1,48 @@
+Entropy_bytes: b'\xb4\xf9z\x0f\xfcfn\xa6\xb1\xd6l\x15\x01:\xe4\xf8D/*o\xc92\xbdir\xcd\xb1\x97[q\xef\xad'
+Entropy_bits: bitarray('1011010011111001011110100000111111111100011001100110111010100110101100011101011001101100000101010000000100111010111001001111100001000100001011110010101001101111110010010011001010111101011010010111001011001101101100011001011101011011011100011110111110101101')
+checksum_length: 8
+hash_bytes: b'\xc9\x9c\xe4\xaa\xe9\xf2R%1\x80\xe8\x1d\xed%\xcbA_um\x85!I\t\xb5P\x81J\xf3\x1e7I]'
+hash_bits: bitarray('1100100110011100111001001010101011101001111100100101001000100101001100011000000011101000000111011110110100100101110010110100000101011111011101010110110110000101001000010100100100001001101101010101000010000001010010101111001100011110001101110100100101011101')
+checksum: bitarray('11001001')
+len(entropy_bits): 256
+entropy_bits.extend(checksum): 264
+grouped_bits: (bitarray('10110100111'), bitarray('11001011110'), bitarray('10000011111'), bitarray('11111000110'), bitarray('01100110111'), bitarray('01010011010'), bitarray('11000111010'), bitarray('11001101100'), bitarray('00010101000'), bitarray('00001001110'), bitarray('10111001001'), bitarray('11110000100'), bitarray('01000010111'), bitarray('10010101001'), bitarray('10111111001'), bitarray('00100110010'), bitarray('10111101011'), bitarray('01001011100'), bitarray('10110011011'), bitarray('01100011001'), bitarray('01110101101'), bitarray('10111000111'), bitarray('10111110101'), bitarray('10111001001'))24
+indices: (1447, 1630, 1055, 1990, 823, 666, 1594, 1644, 168, 78, 1481, 1924, 535, 1193, 1529, 306, 1515, 604, 1435, 793, 941, 1479, 1525, 1481)
+mnemonic_words: ('reject', 'slim', 'loop', 'web', 'group', 'fashion', 'shrug', 'snow', 'bench', 'antenna', 'rice', 'vacuum', 'drill', 'news', 'sand', 'chaos', 'runway', 'entire', 'recall', 'glimpse', 'interest', 'rib', 'salt', 'rice')
+mnemonic_string: reject slim loop web group fashion shrug snow bench antenna rice vacuum drill news sand chaos runway entire recall glimpse interest rib salt rice
+seed: b"\x14\x060\\\xdbt\xf0{o\x96\x00\xc1&A\x86\xb9\x15\xfb\x9f\xe6\xd3\xd5\x94\x9c\xdb\xf5\xca\xf3\x08!5\xeco,\xae\x86\xbb\xa7U_r1\x86\xc6\xa2]\xbfZ\x86M\xbf'\x07\xa4\x1c$}\x8dWT\xef\x95\xa2\xea"
+len(seed): 64
+(seed.hex()): 1406305cdb74f07b6f9600c1264186b915fb9fe6d3d5949cdbf5caf3082135ec6f2cae86bba7555f723186c6a25dbf5a864dbf2707a41c247d8d5754ef95a2ea
+master private key (hex): 0x8e50d7b4fb0c29378d974d62439a045f8b1a690fb1f31ea8d7373899e981e7e9
+master chain code (bytes): b'\xe1\x9e\xf6\xc9\xa564\xdd\xb2\xc9-\x87\xee\xb0\t\xfe\x15{\xb1\xa3\x88NH\x1dy\xfe\x99\x9fMl\xfc,'
+root key: xprv9s21ZrQH143K4JeBpEgW7D5wPwTGT5K57S2m2x8hMzcNHyqwS8cHbLuqetJi8ZjmaafiazZDewN3yAi1CTXKG4ZaCz86jiDLz6dZTdW7Xrs
+depth: 1
+child_number: 2147483692
+parent_fingerprint: b'^\xa0\x080'
+private_key: 16898307871957232816819198940373035193483921794254959918714681709760683529372
+chain_code: b'y\x18\xf9\xda\xa8\xb0[\x84\xc0\xc8r\xa0\x1a3J\xb9\xed\x88\xdb@c\xb2>S\x88\xe7\xedc\x8aG8\x1f'
+depth: 2
+child_number: 2147483708
+parent_fingerprint: b'\x81\xd8\xa7X'
+private_key: 73524669489143483882982445692384730424994542714174367553981372108891886883952
+chain_code: b'E\xb2\x84\xc9-\xce}\x1e\xf9\x85\x19\xde\xf8\x8e\xa9[\x87\n\x12"\x8f?]\xf0\x85\xc7\x01\xf5t\xac\xf1X'
+depth: 3
+child_number: 2147483648
+parent_fingerprint: b'\x88\x19\xc27'
+private_key: 97812099560107735398902648904092978707389056301867741050665693616979600426988
+chain_code: b'8p>\x1b\x06\x81\rw\x84\x13\xf0\xa9\xa9F\x12\xcc\xed\x8e\xaa\xdd\xcf\x10\x84\xad\x8a\xda\xd2\x8f\x02\x95Mt'
+depth: 4
+child_number: 0
+parent_fingerprint: b'@\xa1\xee('
+private_key: 8889845629415737676848760757109300114872397500739050181116362989966427510947
+chain_code: b'\xeb\x0f\xb7)\xf6PO\x17Qr%\x03\xbe\x97\xbb<\x9d\x83\x9b\xc1,\xd7\xc5`\xe9\x81\x1c\xf5\xf2\xf6\xc0\xf3'
+depth: 5
+child_number: 0
+parent_fingerprint: b'\xd9\x13\xf7Y'
+private_key: 47962148487981135867433189114091644471505147516624837883167829724649073780307
+chain_code: b'\xba_\x10\x1a\xad\x08C\xbcK$\xb8|\xc91\xa0F\x82;S\xb74\x80\xabX\xfa\xafr\xcc\xea\x8f\xd7\x85'
+xprv: xprvA42ELBKrPEyD4u4CF9dv6C6hMQ87xiXbQjuQVzMnSjrWq37WzpCqrmSViCq2SQWeXaYVgM1KHiQ1CUaN1f5hnTzu8gzpGZtKQPCvvofhhcS
+private key: 0x6a099d31b7d0d694f169791c08b308291be1c185bdd2f4a8ce5a1f391289a653
+Point object: <ecdsa.ellipticcurve.PointJacobi object at 0x000001CEBDC367F0>
+public key (hex): 0x03dacc6bb745804058c72af5bffde010d026c8769b7b028494b0fdfbfb34a7212b
+address: 0x290fb22fb75e13bdd329ce2d08f3ecc0174554fc
