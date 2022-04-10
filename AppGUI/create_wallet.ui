@@ -169,10 +169,65 @@
      <string>Address</string>
     </property>
    </widget>
+   <widget class="QComboBox" name="coin_combo">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>170</y>
+      <width>121</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="acceptDrops">
+     <bool>true</bool>
+    </property>
+    <property name="currentText">
+     <string>Ethereum</string>
+    </property>
+    <property name="insertPolicy">
+     <enum>QComboBox::InsertAlphabetically</enum>
+    </property>
+    <property name="sizeAdjustPolicy">
+     <enum>QComboBox::AdjustToContents</enum>
+    </property>
+    <property name="placeholderText">
+     <string>Currency</string>
+    </property>
+    <property name="duplicatesEnabled">
+     <bool>false</bool>
+    </property>
+    <property name="frame">
+     <bool>true</bool>
+    </property>
+    <property name="modelColumn">
+     <number>0</number>
+    </property>
+    <item>
+     <property name="text">
+      <string>Ethereum</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Dogecoin</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Bitcoin</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Litecoin</string>
+     </property>
+    </item>
+   </widget>
   </widget>
  </widget>
- <resources>
-  <include location="main_pict.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

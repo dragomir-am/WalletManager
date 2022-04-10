@@ -12,96 +12,49 @@ from bitarray import bitarray
 from bitarray.util import ba2int
 from hashlib import sha256
 
-option_menu = input("Option: ")
 
-if option_menu != 'create':
-    exit()
+def generate_mnemonic(language, secret):
+    wordlist = language.join("txt.")
 
+    entropy_bit_size = 256
+    entropy_bytes = os.urandom(entropy_bit_size // 8)
 
-entropy_bit_size = 256
-entropy_bytes = os.urandom(entropy_bit_size // 8)
-print(entropy_bytes)
+    entropy_bits = bitarray()
+    entropy_bits.frombytes(entropy_bytes)
 
-entropy_bits = bitarray()
-entropy_bits.frombytes(entropy_bytes)
-print(entropy_bits)
+    checksum_length = entropy_bit_size // 32
 
-checksum_length = entropy_bit_size // 32
-print(checksum_length)
+    hash_bytes = sha256(entropy_bytes).digest()
 
-hash_bytes = sha256(entropy_bytes).digest()
-print(hash_bytes)
-# b'\xef\x88\xad\x02\x16\x7f\xa6y\xde\xa6T...'
-hash_bits = bitarray()
-hash_bits.frombytes(hash_bytes)
-print(hash_bits)
-# bitarray('111011111000100010...')
-checksum = hash_bits[:checksum_length]
-print(checksum)
-# bitarray('1110')
+    hash_bits = bitarray()
+    hash_bits.frombytes(hash_bytes)
 
-print(len(entropy_bits))
-# 128
-entropy_bits.extend(checksum)
-print(len(entropy_bits))
-# 132
+    checksum = hash_bits[:checksum_length]
 
-grouped_bits = tuple(entropy_bits[i * 11: (i + 1) * 11] for i in range(len(entropy_bits) // 11))
-print(grouped_bits)
-# (bitarray('01010001100'), bitarray('00011111000'), ...)
-print(len(grouped_bits))
-# 12
+    entropy_bits.extend(checksum)
 
-indices = tuple(ba2int(ba) for ba in grouped_bits)
-print(indices)
-# (652, 248, 1001, 1814, 1366, 212, 704, 1084, 91, 856, 414, 206)
+    grouped_bits = tuple(entropy_bits[i * 11: (i + 1) * 11] for i in range(len(entropy_bits) // 11))
+    indices = tuple(ba2int(ba) for ba in grouped_bits)
 
-with open('english.txt', 'r') as f:
-    english_word_list = [line.strip() for line in f]
+    with open(wordlist, 'r') as f:
+        english_word_list = [line.strip() for line in f]
 
-    mnemonic_words = tuple(english_word_list[i] for i in indices)
-    print(mnemonic_words)
-    # ('face', 'business', 'large', 'tissue', 'print', 'box', 'fix', 'maple', 'arena', 'help', 'critic', 'border')
+        mnemonic_words = tuple(english_word_list[i] for i in indices)
+        print(mnemonic_words)
 
-passphrase = input("Your complex passphrase: ")
+    passphrase = secret
 
-salt = "mnemonic" + passphrase
+    salt = "mnemonic" + passphrase
 
-mnemonic_string = ' '.join(mnemonic_words)
-print(mnemonic_string)
+    mnemonic_string = ' '.join(mnemonic_words)
+    print(mnemonic_string)
 
-# 'across abstract shine ... uphold already club'
-seed = hashlib.pbkdf2_hmac(
-    "sha512",
-    mnemonic_string.encode("utf-8"),
-    salt.encode("utf-8"),
-    2048
-)
+    # 'across abstract shine ... uphold already club'
+    seed = hashlib.pbkdf2_hmac(
+        "sha512",
+        mnemonic_string.encode("utf-8"),
+        salt.encode("utf-8"),
+        2048
+    )
 
-print(seed)
-# b'\xcd@\xd0}\xbc\x17\xd6H\x00\x1c\xdc...'
-print(len(seed))
-# 64
-print(seed.hex())
-
-
-# cd40d07dbc17d648001cdc84473be584...
-
-
-def get_seed():
-    return seed
-
-
-def get_salt():
-    return salt
-
-
-def get_mnemonic():
-    return mnemonic_string
-
-
-def get_passphrase():
-    return passphrase
-
-
-
+    return seed, salt, mnemonic_string, passphrase

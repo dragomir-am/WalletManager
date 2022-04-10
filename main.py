@@ -9,7 +9,9 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog, QApplication
 from PyQt5.uic import loadUi
 
+from blockchain.infura import Infura
 from utils.email_verification import *
+from wallet import eth, btc, doge, ltc
 
 path_dir: str = r"C:\Users\drago\PycharmProjects\WalletManager\AppGUI\\"
 
@@ -157,12 +159,36 @@ class WalletManager(QDialog):
         self.create_wallet_btn.clicked.connect(open_create_wallet)
 
 
+def generate_wallet(coin, wordlist_language, passphrase):
+    if coin == "Ethereum":
+        eth.generate_eth_wallet(wordlist_language, passphrase)
+    elif coin == "Litecoin":
+        ltc.generate_ltc_wallet(wordlist_language, passphrase)
+    elif coin == "Bitcoin":
+        btc.generate_btc_wallet(wordlist_language, passphrase)
+    elif coin == "Dogecoin":
+        doge.generate_doge_wallet(wordlist_language, passphrase)
+
+
 class CreateWallet(QDialog):
     def __init__(self):
         super(CreateWallet, self).__init__()
         loadUi(path_dir + "create_wallet.ui", self)
+
+        self.generate_btn.clicked.connect(self.on_click)
+
+    def on_click(self):
         wordlist_language = self.wordlist_combo.currentText()
         passphrase = self.passphrase_field.text()
+        coin = self.coin_combo.currentText()
+        if coin == "Ethereum":
+            eth.generate_eth_wallet(wordlist_language.lower(), passphrase)
+        elif coin == "Litecoin":
+            ltc.generate_ltc_wallet(wordlist_language.lower(), passphrase)
+        elif coin == "Bitcoin":
+            btc.generate_btc_wallet(wordlist_language.lower(), passphrase)
+        elif coin == "Dogecoin":
+            doge.generate_doge_wallet(wordlist_language.lower(), passphrase)
 
 
 class Register(QDialog):
@@ -352,9 +378,9 @@ class ChangePassword(QDialog):
 
 
 app = QApplication(sys.argv)
-#login = Login()
+# login = Login()
 widget = QtWidgets.QStackedWidget()
-#widget.addWidget(login)
+# widget.addWidget(login)
 widget.show()
 open_login()
 
