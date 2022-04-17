@@ -9,9 +9,9 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog, QApplication
 from PyQt5.uic import loadUi
 
+from aux_help.email_verification import email_syntax, send_email_otp
 from blockchain.infura import Infura
-from utils.email_verification import *
-from wallet import eth, btc, doge, ltc
+
 
 path_dir: str = r"C:\Users\drago\PycharmProjects\WalletManager\AppGUI\\"
 
@@ -160,14 +160,8 @@ class WalletManager(QDialog):
 
 
 def generate_wallet(coin, wordlist_language, passphrase):
-    if coin == "Ethereum":
-        eth.generate_eth_wallet(wordlist_language, passphrase)
-    elif coin == "Litecoin":
-        ltc.generate_ltc_wallet(wordlist_language, passphrase)
-    elif coin == "Bitcoin":
-        btc.generate_btc_wallet(wordlist_language, passphrase)
-    elif coin == "Dogecoin":
-        doge.generate_doge_wallet(wordlist_language, passphrase)
+    pass
+
 
 
 class CreateWallet(QDialog):
@@ -181,14 +175,14 @@ class CreateWallet(QDialog):
         wordlist_language = self.wordlist_combo.currentText()
         passphrase = self.passphrase_field.text()
         coin = self.coin_combo.currentText()
-        if coin == "Ethereum":
-            eth.generate_eth_wallet(wordlist_language.lower(), passphrase)
-        elif coin == "Litecoin":
-            ltc.generate_ltc_wallet(wordlist_language.lower(), passphrase)
-        elif coin == "Bitcoin":
-            btc.generate_btc_wallet(wordlist_language.lower(), passphrase)
-        elif coin == "Dogecoin":
-            doge.generate_doge_wallet(wordlist_language.lower(), passphrase)
+        # if coin == "Ethereum":
+        #     eth.generate_eth_wallet(wordlist_language.lower(), passphrase)
+        # elif coin == "Litecoin":
+        #     ltc.generate_ltc_wallet(wordlist_language.lower(), passphrase)
+        # elif coin == "Bitcoin":
+        #     btc.generate_btc_wallet(wordlist_language.lower(), passphrase)
+        # elif coin == "Dogecoin":
+        #     doge.generate_doge_wallet(wordlist_language.lower(), passphrase)
 
 
 class Register(QDialog):
@@ -386,6 +380,5 @@ open_login()
 
 try:
     sys.exit(app.exec_())
-
 except:
     print("Exiting")
