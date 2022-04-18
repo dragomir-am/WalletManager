@@ -4,11 +4,15 @@ import string
 import re
 
 from email.message import EmailMessage
+from auxHelp.user_model import User
+
+user = User()
 
 
 def read_credentials():
     sender = password = ""
-    with open("credentials.txt", "r") as f:
+    path = r'C:/Users/drago/PycharmProjects/WalletManager/storage/credentials.txt'
+    with open(path, "r") as f:
         file = f.readlines()
         sender = file[0].strip()
         password = file[1].strip()
@@ -17,8 +21,7 @@ def read_credentials():
 
 
 def otp_generator(size):
-    # Takes random choices from
-    # ascii_letters and digits
+    # Takes random choices from ascii_letters and digits
     generate_pass = ''.join([random.choice(string.ascii_uppercase +
                                            string.ascii_lowercase +
                                            string.digits)

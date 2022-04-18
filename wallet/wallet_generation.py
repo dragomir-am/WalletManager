@@ -2,10 +2,10 @@ from wallet_constructor.cryptocurrencies import EthereumMainnet
 from wallet_constructor.derivations import BIP44Derivation
 from wallet_constructor.hd import BIP44HDWallet
 from wallet_constructor.utils import generate_mnemonic
-from aux_help.db_actions import Wallet_db
+from auxHelp.db_actions import Actions
 from wallet_constructor import derivations
 
-db = Wallet_db()
+db = Actions()
 
 
 def generate_eth_wallet(language, passphrase, coin, count, email) -> object:

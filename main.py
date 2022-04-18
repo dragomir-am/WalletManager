@@ -8,66 +8,15 @@ import time
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog, QApplication
 from PyQt5.uic import loadUi
+from auxHelp.db_actions import Actions
 
-from aux_help.email_verification import email_syntax, send_email_otp
+from auxHelp.email_verification import email_syntax, send_email_otp
+from auxHelp.user_model import User
 from blockchain.infura import Infura
 
-
 path_dir: str = r"C:\Users\drago\PycharmProjects\WalletManager\AppGUI\\"
-
-
-def hash_password(password):
-    """Hash a password for storing."""
-    salt = hashlib.sha256(os.urandom(1024)).hexdigest().encode('ascii')
-    passwordhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
-                                       salt, 100000)
-    passwordhash = binascii.hexlify(passwordhash)
-    return (salt + passwordhash).decode('ascii')
-
-
-# Check hashed password validity
-def verify_password(stored_password, inserted_password):
-    """Verify a stored password against one provided by user"""
-    salt = stored_password[:64]
-    stored_password = stored_password[64:]
-    passwordhash = hashlib.pbkdf2_hmac('sha512',
-                                       inserted_password.encode('utf-8'),
-                                       salt.encode('ascii'),
-                                       100000)
-    passwordhash = binascii.hexlify(passwordhash).decode('ascii')
-    return passwordhash == stored_password
-
-
-def account_exists(email):
-    conn = sqlite3.connect("storage.db")
-    cur = conn.cursor()
-    cur.execute('SELECT email FROM login_info')
-    results_user = {result_user[0] for result_user in cur.fetchall()}
-    if email not in results_user:
-        existing_account = False
-    else:
-        existing_account = True
-    return existing_account
-
-
-def validate_login(email, password):
-    conn = sqlite3.connect("storage.db")
-    cur = conn.cursor()
-
-    query_pass = 'SELECT password FROM login_info WHERE email =\'' + email + "\'"
-    cur.execute(query_pass)
-    result_pass = cur.fetchone()[0]
-
-    if verify_password(result_pass, password):
-        pass_found = True
-    else:
-        pass_found = False
-
-    return pass_found
-
-
-def get_email(email):
-    return email
+db = Actions()
+user = User()
 
 
 def open_register():
@@ -88,11 +37,14 @@ def open_login():
 
 def open_otp(email):
     otp_window = OTP_window()
-    widget.addWidget(otp_window)
-    widget.setFixedWidth(603)
-    widget.setFixedHeight(397)
-    widget.setCurrentIndex(widget.currentIndex() + 1)
-    process_otp(email)
+    # widget.addWidget(otp_window)
+    # widget.setFixedWidth(603)
+    # widget.setFixedHeight(397)
+    otp_window.setFixedWidth(603)
+    otp_window.setFixedHeight(397)
+    user.otp = send_email_otp(email)
+    otp_window.exec()
+    # widget.setCurrentIndex(widget.currentIndex() + 1)
 
 
 def open_change_password():
@@ -130,17 +82,17 @@ class Login(QDialog):
 
     # Adjust logic for message display
     def login_function(self):
-        email = self.email_field.text()
-        password = self.pass_field.text()
-        if len(email) == 0 or len(password) == 0:
+        user.email = self.email_field.text()
+        user.password = self.pass_field.text()
+        if len(user.email) == 0 or len(user.password) == 0:
             self.empty_error.setText("Please enter both username and password")
             self.acc_error.setText("")
             self.pass_error.setText("")
-        elif account_exists(email) is not True:
+        elif db.find_user_account(user.email) is not True:
             self.acc_error.setText("Account does not exist!")
             self.empty_error.setText("")
             self.pass_error.setText("")
-        elif validate_login(email, password) is not True:
+        elif db.validate_user_login(user.email, user.password) is not True:
             self.pass_error.setText("Incorrect password")
             self.empty_error.setText("")
             self.empty_error.setText("")
@@ -148,8 +100,8 @@ class Login(QDialog):
             self.title_label.setText("Login Successful")
             open_wallet_manager()
 
-    def update_message(self):
-        self.title_label.setText("Password updated, you can login now!")
+    def update_message(self, message):
+        self.title_label.setText(message)
 
 
 class WalletManager(QDialog):
@@ -161,7 +113,6 @@ class WalletManager(QDialog):
 
 def generate_wallet(coin, wordlist_language, passphrase):
     pass
-
 
 
 class CreateWallet(QDialog):
@@ -194,56 +145,36 @@ class Register(QDialog):
         self.register_confirm_pass_field.setEchoMode(QtWidgets.QLineEdit.Password)
         self.register_register_btn.clicked.connect(self.register_function)
 
-        conn = sqlite3.connect("storage.db")
-        cur = conn.cursor()
-
-        cur.execute("CREATE TABLE IF NOT EXISTS login_info (email TEXT, password TEXT)")
-        conn.commit()
+        db.create_user_table()
 
     def register_function(self):
-        email = self.register_email_field.text()
-        password = self.register_pass_field.text()
+        user.email = self.register_email_field.text()
+        user.password = self.register_pass_field.text()
         confirm_password = self.register_confirm_pass_field.text()
-        conn = sqlite3.connect("storage.db")
-        cur = conn.cursor()
 
-        if len(password) == 0 or len(confirm_password) == 0 or len(email) == 0:
+        if len(user.password) == 0 or len(confirm_password) == 0 or len(user.email) == 0:
             self.register_empty_error.setText("Please input all fields!")
             self.register_acc_error.setText("")
             self.register_pass_error.setText("")
             self.register_invalid_email_error.setText("")
-        elif email_syntax(email) is not True:
+        elif email_syntax(user.email) is not True:
             self.register_acc_error.setText("")
             self.register_pass_error.setText("")
             self.register_empty_error.setText("")
             self.register_invalid_email_error.setText("Email address is invalid!")
-        elif account_exists(email) is True:
+        elif db.find_user_account(user.email) is True:
             self.register_acc_error.setText("Email address already belongs to an account!")
             self.register_pass_error.setText("")
             self.register_empty_error.setText("")
             self.register_invalid_email_error.setText("")
-        elif password != confirm_password:
+        elif user.password != confirm_password:
             self.register_pass_error.setText("Passwords do not match!")
             self.register_acc_error.setText("")
             self.register_empty_error.setText("")
             self.register_invalid_email_error.setText("")
         else:
-            hashed_password = hash_password(password)
-            user_info = [email, hashed_password]
-            cur.execute('INSERT INTO login_info (email, password) VALUES (?,?)', user_info)
-            conn.commit()
-            conn.close()
-            open_otp(email)
-
-
-def process_otp(email):
-    otp = send_email_otp(email)
-    file = open("otp.txt", "w")
-    file.write(otp)
-    file.close()
-    file = open("email.txt", "w")
-    file.write(email)
-    file.close()
+            db.insert_user_table(user.email, user.password)
+            open_otp(user.email)
 
 
 class OTP_window(QDialog):
@@ -257,41 +188,24 @@ class OTP_window(QDialog):
         self.count = 0
 
     def resend_otp(self):
-        with open("email.txt", "r") as f:
-            file = f.readlines()
-            user_email = file[0]
-        process_otp(user_email)
+        user.otp = send_email_otp(user.email)
         self.timer_info_label.setText("We have resent the confirmation code")
-        time.sleep(1)
-        self.timer_info_label.setText("")
 
     def validate_otp(self):
         self.otp_inserted = self.otp_field.text()
+        self.timer_info_label.setText("")
 
-        with open("otp.txt", "r") as f:
-            file = f.readlines()
-            otp_generated = file[0]
-
-        if otp_generated == self.otp_inserted:
-            self.timer_info_label.setText("Registration complete! You are being sent to login")
-            time.sleep(5)
+        if user.otp == self.otp_inserted:
             open_login()
-            os.remove("otp.txt")
-            os.remove("email.txt")
+            self.timer_info_label.setText("Registration complete, you may close the window now!")
+
         else:
-            self.timer_info_label.setText("Invalid code")
+            self.timer_info_label.setText("Invalid code: You have " + str(3 - self.count) + " attempts left")
             self.count = self.count + 1
-            print(self.count)
 
         if self.count > 3:
             self.timer_info_label.setText("Too many attempts, go back to Register!")
-            conn = sqlite3.connect("storage.db")
-            cur = conn.cursor()
-            cur.execute('DELETE FROM login_info WHERE ROWID=(SELECT MAX(rowid) FROM login_info)')
-            conn.commit()
-            conn.close()
-            os.remove("otp.txt")
-            os.remove("email.txt")
+            db.delete_user_record()
             open_register()
 
 
@@ -299,20 +213,15 @@ class ChangePassword(QDialog):
     def __init__(self):
         super(ChangePassword, self).__init__()
         loadUi(path_dir + "update_password.ui", self)
+        user.email = self.email_field.text()
         self.new_pass_field.setEchoMode(QtWidgets.QLineEdit.Password)
         self.check_pass_field.setEchoMode(QtWidgets.QLineEdit.Password)
         self.validate_btn.clicked.connect(self.update_password)
-        self.send_btn.clicked.connect(self.send)
-
-    def send(self):
-        email = self.email_field.text()
-        process_otp(email)
+        self.send_btn.clicked.connect(send_email_otp(user.email))
 
     def compare_otp(self):
         code = self.otp_field.text()
-        with open("otp.txt", "r") as f:
-            file = f.readlines()
-            otp_generated = file[0]
+        otp_generated = user.otp
 
         if otp_generated != code:
             otp_integrity = False
@@ -324,21 +233,21 @@ class ChangePassword(QDialog):
 
     def update_password(self):
         code = self.otp_field.text()
-        email = self.email_field.text()
+        user.email = self.email_field.text()
         new_password = self.new_pass_field.text()
         check_password = self.check_pass_field.text()
 
-        if len(email) == 0 or len(new_password) == 0 or len(check_password) == 0 or len(code) == 0:
+        if len(user.email) == 0 or len(new_password) == 0 or len(check_password) == 0 or len(code) == 0:
             self.empty_error.setText("Please input all fields!")
             self.pass_error.setText("")
             self.acc_error.setText("")
             self.mfa_error.setText("")
-        elif account_exists(email) is not True:
+        elif db.find_user_account(user.email) is not True:
             self.empty_error.setText("")
             self.pass_error.setText("")
             self.acc_error.setText("Email address does not exist")
             self.mfa_error.setText("")
-        elif email_syntax(email) is not True:
+        elif email_syntax(user.email) is not True:
             self.empty_error.setText("")
             self.pass_error.setText("")
             self.acc_error.setText("")
@@ -355,20 +264,14 @@ class ChangePassword(QDialog):
             self.acc_error.setText("")
             self.mfa_error.setText("The OTP does not match!")
         else:
-            updated_pass = hash_password(new_password)
-            conn = sqlite3.connect("storage.db")
-            cur = conn.cursor()
-            query = 'UPDATE login_info SET password = ? WHERE email = ?'
-            cur.execute(query, (updated_pass, email))
-            conn.commit()
-            conn.close()
+            db.update_user_record(user.email, new_password)
 
             login = Login()
             widget.addWidget(login)
             widget.setFixedWidth(1011)
             widget.setFixedHeight(621)
             widget.setCurrentIndex(widget.currentIndex() + 1)
-            login.update_message()
+            login.update_message(message="Password updated, you can login now!")
 
 
 app = QApplication(sys.argv)

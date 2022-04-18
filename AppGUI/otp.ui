@@ -250,11 +250,19 @@ font: italic 12pt &quot;Arial&quot;;
    <widget class="QLabel" name="timer_info_label">
     <property name="geometry">
      <rect>
-      <x>130</x>
+      <x>110</x>
       <y>280</y>
-      <width>351</width>
-      <height>21</height>
+      <width>391</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Calibri</family>
+      <pointsize>12</pointsize>
+      <italic>false</italic>
+      <bold>true</bold>
+     </font>
     </property>
     <property name="styleSheet">
      <string notr="true">font: 700 12pt &quot;Calibri&quot;;
@@ -275,8 +283,6 @@ color:rgb(255, 255, 255) </string>
    <zorder>timer_info_label</zorder>
   </widget>
  </widget>
- <resources>
-  <include location="main_pict.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
