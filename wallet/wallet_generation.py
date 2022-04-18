@@ -8,7 +8,7 @@ from wallet_constructor import derivations
 db = Actions()
 
 
-def generate_eth_wallet(language, passphrase, coin, count, email) -> object:
+def generate_wallet(language, passphrase, coin, count, email) -> object:
     # Generate mnemonic words
     MNEMONIC: str = generate_mnemonic(language=language, strength=256)
     # Secret passphrase/password for mnemonic
@@ -72,4 +72,4 @@ def generate_eth_wallet(language, passphrase, coin, count, email) -> object:
     db.insert_wallet_core(complete_wallet_keys_list, complete_wallet_values_list)
 
 
-generate_eth_wallet("english", "alex", EthereumMainnet, 2, "test@yahoo.com")
+generate_wallet("english", "alex", EthereumMainnet, 2, "test@yahoo.com")

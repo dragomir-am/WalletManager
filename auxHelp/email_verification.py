@@ -4,7 +4,7 @@ import string
 import re
 
 from email.message import EmailMessage
-from auxHelp.user_model import User
+from auxHelp.models import User
 
 user = User()
 

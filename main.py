@@ -6,17 +6,19 @@ import sys
 import time
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QDialog, QApplication
+from PyQt5.QtWidgets import QDialog, QApplication, QMainWindow
 from PyQt5.uic import loadUi
 from auxHelp.db_actions import Actions
 
 from auxHelp.email_verification import email_syntax, send_email_otp
-from auxHelp.user_model import User
+from auxHelp.models import User, WalletModel
 from blockchain.infura import Infura
+from wallet.wallet_generation import generate_wallet
 
 path_dir: str = r"C:\Users\drago\PycharmProjects\WalletManager\AppGUI\\"
 db = Actions()
 user = User()
+wm = WalletModel()
 
 
 def open_register():
@@ -111,29 +113,44 @@ class WalletManager(QDialog):
         self.create_wallet_btn.clicked.connect(open_create_wallet)
 
 
-def generate_wallet(coin, wordlist_language, passphrase):
-    pass
-
-
-class CreateWallet(QDialog):
+class CreateWallet(QMainWindow):
     def __init__(self):
         super(CreateWallet, self).__init__()
-        loadUi(path_dir + "create_wallet.ui", self)
+        loadUi(path_dir + "wallet_manager_2.ui", self)
+        self.language = ""
+        self.coin = ""
+        self.purpose = ""
 
-        self.generate_btn.clicked.connect(self.on_click)
+        self.passphrase_field.setEchoMode(QtWidgets.QLineEdit.Password)
 
-    def on_click(self):
-        wordlist_language = self.wordlist_combo.currentText()
-        passphrase = self.passphrase_field.text()
-        coin = self.coin_combo.currentText()
-        # if coin == "Ethereum":
-        #     eth.generate_eth_wallet(wordlist_language.lower(), passphrase)
-        # elif coin == "Litecoin":
-        #     ltc.generate_ltc_wallet(wordlist_language.lower(), passphrase)
-        # elif coin == "Bitcoin":
-        #     btc.generate_btc_wallet(wordlist_language.lower(), passphrase)
-        # elif coin == "Dogecoin":
-        #     doge.generate_doge_wallet(wordlist_language.lower(), passphrase)
+        self.language_comboBox.currentIndexChanged.connect(self.get_language)
+
+        self.quantity_comboBox.currentIndexChanged.connect(self.get_quantity)
+
+        self.coin_comboBox.currentIndexChanged.connect(self.get_coin)
+
+        self.purpose_comboBox.currentIndexChanged.connect(self.get_purpose)
+
+        self.generate_button.clicked.connect(self.create_wallet)
+
+    def get_language(self):
+        self.language = wm.language[self.language_comboBox.currentIndex()]
+        print(self.language)
+
+    def get_quantity(self):
+        wm.quantity = int(self.quantity_comboBox.currentText())
+        print(wm.quantity)
+
+    def get_coin(self):
+        self.coin = wm.currency[self.coin_comboBox.currentIndex()]
+        print(self.coin)
+
+    def get_purpose(self):
+        self.purpose = wm.change[self.purpose_comboBox.currentIndex()]
+
+    def create_wallet(self):
+        wm.passphrase = self.passphrase_field.text()
+        generate_wallet(self.language, wm.passphrase, self.coin, wm.quantity, user.email)
 
 
 class Register(QDialog):
@@ -275,11 +292,13 @@ class ChangePassword(QDialog):
 
 
 app = QApplication(sys.argv)
-# login = Login()
+login = Login()
 widget = QtWidgets.QStackedWidget()
-# widget.addWidget(login)
+# wallet = CreateWallet()  # open_create_wallet()
+# widget.addWidget(wallet)
+widget.addWidget(login)
 widget.show()
-open_login()
+# open_login()
 
 try:
     sys.exit(app.exec_())
