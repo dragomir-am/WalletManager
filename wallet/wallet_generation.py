@@ -26,7 +26,7 @@ def generate_wallet(language, passphrase, coin, count, email) -> object:
     bip44_hdwallet.clean_derivation()
 
     # Create derivation table
-    db.create_derivation_wallet(coin=bip44_hdwallet.symbol())
+    db.create_derivation_wallet()
 
     # Get wallet fingerprint to server as reference for derivation table
     fingerprint = str(bip44_hdwallet.finger_print())

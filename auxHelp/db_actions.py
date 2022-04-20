@@ -2,10 +2,20 @@ import sqlite3
 from auxHelp.secure_login import verify_password, hash_password
 
 
+# from pysqlcipher3 import dbapi2 as sqlite3
+# from models import User
+#
+# user = User()
+
+
 class Actions:
 
     def __init__(self):
         path = r'C:/Users/drago/PycharmProjects/WalletManager/storage/storage.db'
+        # self.key = f"PRAGMA KEY={user.password}"
+        # self.conn = sqlite3.connect(path)
+        # self.cur.execute(key)
+        # self.conn.commit()
         self.conn = sqlite3.connect(path)
         self.conn.row_factory = sqlite3.Row
         self.cur = self.conn.cursor()
@@ -55,23 +65,47 @@ class Actions:
         columns = ", ".join("{field} TEXT".format(field=field) for field in wallet_keys)
 
         self.cur.execute("""
-            CREATE TABLE IF NOT EXISTS wallet_core(
-            {columns},
-            PRIMARY KEY(finger_print, email)
-            )
-            """.format(columns=columns))
+                    CREATE TABLE IF NOT EXISTS wallet_core(
+                    {columns},
+                    PRIMARY KEY(finger_print, email)
+                    )
+                    """.format(columns=columns))
         self.conn.commit()
 
-    def create_derivation_wallet(self, coin):
+    def create_derivation_wallet(self):
         self.cur.execute(f"""
-            CREATE TABLE IF NOT EXISTS wallet_derivation_{coin} ( 
-            address_index TEXT,
-            path TEXT,
-            address TEXT,
-            private_key TEXT,
-            finger_print TEXT,
-            FOREIGN KEY(finger_print) REFERENCES wallet_core(finger_print)
-            )""")
+                    CREATE TABLE IF NOT EXISTS wallet_derivation ( 
+                    coin TEXT,
+                    address_index TEXT,
+                    path TEXT,
+                    address TEXT,
+                    private_key TEXT,
+                    finger_print TEXT,
+                    FOREIGN KEY(finger_print) REFERENCES wallet_core(finger_print)
+                    )""")
+
+        self.conn.commit()
+
+    def create_external_classic_wallet(self):
+        self.cur.execute(f"""
+                    CREATE TABLE IF NOT EXISTS external_classic_wallet (
+                    currency TEXT,
+                    public_key TEXT,
+                    private_key TEXT,
+                    email TEXT,
+                    FOREIGN KEY(email) REFERENCES login_info(email)
+                    )""")
+
+        self.conn.commit()
+
+    def create_external_hd_wallet(self):
+        self.cur.execute(f"""
+                   CREATE TABLE IF NOT EXISTS external_classic_wallet (
+                   currency TEXT,
+                   email TEXT,
+                   mnemonic TEXT,
+                   FOREIGN KEY(email) REFERENCES login_info(email)
+                   )""")
 
         self.conn.commit()
 
@@ -84,7 +118,17 @@ class Actions:
         self.conn.commit()
 
     def insert_wallet_derivation(self, coin, index, path, address, private_key, fingerprint):
-        query = f"INSERT INTO wallet_derivation_{coin}(address_index, path, address, private_key, finger_print) VALUES " \
-                f"(?,?,?,?,?) "
-        self.cur.execute(query, (index, path, address, private_key, fingerprint))
+        query = f"INSERT INTO wallet_derivation (coin, address_index, path, address, private_key, finger_print) " \
+                f"VALUES (?,?,?,?,?,?) "
+        self.cur.execute(query, (coin, index, path, address, private_key, fingerprint))
+        self.conn.commit()
+
+    def insert_external_classic_wallet(self, coin, public_key, private_key):
+        query = f"INSERT INTO external_classic_wallet (coin, public_key, private_key) VALUES (?,?,?) "
+        self.cur.execute(query, (coin, public_key, private_key))
+        self.conn.commit()
+
+    def insert_external_hd_wallet(self, coin, mnemonic, email):
+        query = f"INSERT INTO wallet_derivation (coin, mnemonic) VALUES (?,?,?) "
+        self.cur.execute(query, (coin, mnemonic, email))
         self.conn.commit()
