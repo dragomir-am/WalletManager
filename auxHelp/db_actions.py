@@ -1,4 +1,5 @@
 import sqlite3
+
 from auxHelp.secure_login import verify_password, hash_password
 
 
@@ -17,8 +18,8 @@ class Actions:
         # self.cur.execute(key)
         # self.conn.commit()
         self.conn = sqlite3.connect(path)
-        self.conn.row_factory = sqlite3.Row
         self.cur = self.conn.cursor()
+        self.conn.row_factory = sqlite3.Row
 
     def create_user_table(self):
         self.cur.execute("CREATE TABLE IF NOT EXISTS login_info (email TEXT, password TEXT)")
@@ -66,8 +67,7 @@ class Actions:
 
         self.cur.execute("""
                     CREATE TABLE IF NOT EXISTS wallet_core(
-                    {columns},
-                    PRIMARY KEY(finger_print, email)
+                    {columns}
                     )
                     """.format(columns=columns))
         self.conn.commit()
@@ -80,8 +80,9 @@ class Actions:
                     path TEXT,
                     address TEXT,
                     private_key TEXT,
-                    finger_print TEXT,
-                    FOREIGN KEY(finger_print) REFERENCES wallet_core(finger_print)
+                    change TEXT,
+                    account TEXT,
+                    finger_print TEXT
                     )""")
 
         self.conn.commit()
@@ -117,10 +118,10 @@ class Actions:
         self.cur.execute(query, wallet_values)
         self.conn.commit()
 
-    def insert_wallet_derivation(self, coin, index, path, address, private_key, fingerprint):
-        query = f"INSERT INTO wallet_derivation (coin, address_index, path, address, private_key, finger_print) " \
-                f"VALUES (?,?,?,?,?,?) "
-        self.cur.execute(query, (coin, index, path, address, private_key, fingerprint))
+    def insert_wallet_derivation(self, coin, index, path, address, private_key, change, account, fingerprint):
+        query = f"INSERT INTO wallet_derivation (coin, address_index, path, address, private_key, " \
+                f"change, account, finger_print) VALUES (?,?,?,?,?,?,?,?) "
+        self.cur.execute(query, (coin, index, path, address, private_key, change, account, fingerprint))
         self.conn.commit()
 
     def insert_external_classic_wallet(self, coin, public_key, private_key):
@@ -132,3 +133,28 @@ class Actions:
         query = f"INSERT INTO wallet_derivation (coin, mnemonic) VALUES (?,?,?) "
         self.cur.execute(query, (coin, mnemonic, email))
         self.conn.commit()
+
+    def get_wallet_derivation(self):
+        query = "SELECT * FROM wallet_derivation"
+        self.cur.execute(query)
+        self.conn.commit()
+        rows = self.cur.fetchall()
+
+        return rows
+
+    def get_wallet_core(self, fingerprint):
+        query = f"SELECT mnemonic, language, passphrase FROM wallet_core WHERE finger_print='{fingerprint}' "
+        self.cur.execute(query)
+        row = self.cur.fetchone()
+        rowDict = dict(zip([c[0] for c in self.cur.description], row))
+
+        return rowDict
+
+    def check_derivation_address(self, path):
+        self.cur.execute("SELECT path FROM wallet_derivation WHERE path=?", (path,))
+        result = self.cur.fetchone()
+
+        if result:
+            return True
+        else:
+            return False

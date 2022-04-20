@@ -11,14 +11,14 @@ from PyQt5.uic import loadUi
 from auxHelp.db_actions import Actions
 
 from auxHelp.email_verification import email_syntax, send_email_otp
-from auxHelp.models import User, WalletModel
-from blockchain.infura import Infura
+from auxHelp.models import User, WalletDetails
+# from blockchain.infura import Infura
 from wallet.wallet_generation import generate_wallet
 
 path_dir: str = r"C:\Users\drago\PycharmProjects\WalletManager\AppGUI\\"
 db = Actions()
 user = User()
-wm = WalletModel()
+wm = WalletDetails()
 
 
 def open_register():
@@ -120,37 +120,90 @@ class CreateWallet(QMainWindow):
         self.language = ""
         self.coin = ""
         self.purpose = ""
+        self.success = True
+        self.tab_index = 0
+
+        self.tabWidget.currentChanged.connect(self.tabChanged)
 
         self.passphrase_field.setEchoMode(QtWidgets.QLineEdit.Password)
 
-        self.language_comboBox.currentIndexChanged.connect(self.get_language)
+        if self.language_comboBox.currentIndex() != -1:
+            self.get_language()
 
-        self.quantity_comboBox.currentIndexChanged.connect(self.get_quantity)
+        if self.quantity_comboBox.currentIndex() != -1:
+            self.get_quantity()
 
-        self.coin_comboBox.currentIndexChanged.connect(self.get_coin)
+        if self.coin_comboBox.currentIndex() != -1:
+            self.get_coin()
 
-        self.purpose_comboBox.currentIndexChanged.connect(self.get_purpose)
+        if self.purpose_comboBox.currentIndex() != -1:
+            self.get_purpose()
 
         self.generate_button.clicked.connect(self.create_wallet)
 
-    def get_language(self):
+    def tabChanged(self):
+        self.tab_index = self.tabWidget.currentIndex()
+        if self.tab_index == 1:
+            self.get_view_wallets_data()
+
+    def clear_input(self):
+        self.passphrase_field.clear()
+        self.language_comboBox.setCurrentIndex(-1)
+        self.quantity_comboBox.setCurrentIndex(-1)
+        self.coin_comboBox.setCurrentIndex(-1)
+        self.purpose_comboBox.setCurrentIndex(-1)
+
+    def next_tab(self):
+        cur_position = self.tabWidget.currentIndex()
+        if cur_position < len(self.tabWidget) - 1:
+            self.tabWidget.setCurrentIndex(cur_position + 1)
+
+    def get_options(self):
         self.language = wm.language[self.language_comboBox.currentIndex()]
-        print(self.language)
-
-    def get_quantity(self):
         wm.quantity = int(self.quantity_comboBox.currentText())
-        print(wm.quantity)
-
-    def get_coin(self):
         self.coin = wm.currency[self.coin_comboBox.currentIndex()]
-        print(self.coin)
-
-    def get_purpose(self):
         self.purpose = wm.change[self.purpose_comboBox.currentIndex()]
+
+    def prev_tab(self):
+        cur_position = self.tabWidget.currentIndex()
+        if cur_position > 0:
+            self.tabWidget.setCurrentIndex(cur_position - 1)
 
     def create_wallet(self):
         wm.passphrase = self.passphrase_field.text()
-        generate_wallet(self.language, wm.passphrase, self.coin, wm.quantity, user.email)
+        self.get_options()
+        try:
+            generate_wallet(self.language, wm.passphrase, self.coin, wm.quantity, user.email)
+        except:
+            self.success = False
+
+        if self.success:
+            self.clear_input()
+            self.next_tab()
+
+    def get_view_wallets_data(self):
+        data = db.get_wallet_derivation()
+        self.tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.tableWidget.insertRow(row_index)
+            self.tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[2]))
+            self.tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[3]))
+            self.tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
+            row_index += 1
+
+    def update_table(self):
+        data = db.update_wallet_derivation_gui()
+
+        row_index = 0
+        for row in data:
+            self.tableWidget.insertRow(row_index)
+            self.tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[2]))
+            self.tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[3]))
+            self.tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
+            row_index += 1
 
 
 class Register(QDialog):
@@ -292,11 +345,11 @@ class ChangePassword(QDialog):
 
 
 app = QApplication(sys.argv)
-login = Login()
+# login = Login()
 widget = QtWidgets.QStackedWidget()
-# wallet = CreateWallet()  # open_create_wallet()
-# widget.addWidget(wallet)
-widget.addWidget(login)
+wallet = CreateWallet()  # open_create_wallet()
+widget.addWidget(wallet)
+# widget.addWidget(login)
 widget.show()
 # open_login()
 

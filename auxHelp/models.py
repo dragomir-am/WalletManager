@@ -8,7 +8,7 @@ class User:
         self.otp = ""
 
 
-class WalletModel:
+class WalletDetails:
     def __init__(self):
         self.language = {
             0: "chinese_simplified",
@@ -21,15 +21,16 @@ class WalletModel:
             7: "spanish"
         }
         self.quantity = 0
+        self.account = 0
         self.currency = {
-           0: BitcoinMainnet,
-           1: LitecoinMainnet,
-           2: DogecoinMainnet,
-           3: EthereumMainnet
+            0: BitcoinMainnet,
+            1: LitecoinMainnet,
+            2: DogecoinMainnet,
+            3: EthereumMainnet
         }
         self.change = {
-           0: 0,
-           1: 1
+            0: True,
+            1: False
         }
         self.passphrase = ""
-
+        self.address_found = False
