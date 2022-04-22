@@ -122,6 +122,11 @@ class CreateWallet(QMainWindow):
         self.purpose = ""
         self.success = True
         self.tab_index = 0
+        number_wallets = str(db.get_number_of_wallets())
+        number_accounts = str(db.get_number_of_accounts())
+
+        self.counter_wallets.setText("Active Wallets: " + str(number_wallets[1]))
+        self.counter_accounts.setText("Active Accounts: " + str(number_accounts[1]))
 
         self.tabWidget.currentChanged.connect(self.tabChanged)
 
@@ -184,18 +189,6 @@ class CreateWallet(QMainWindow):
     def get_view_wallets_data(self):
         data = db.get_wallet_derivation()
         self.tableWidget.setRowCount(0)
-        row_index = 0
-        for row in data:
-            self.tableWidget.insertRow(row_index)
-            self.tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
-            self.tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[2]))
-            self.tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[3]))
-            self.tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
-            row_index += 1
-
-    def update_table(self):
-        data = db.update_wallet_derivation_gui()
-
         row_index = 0
         for row in data:
             self.tableWidget.insertRow(row_index)

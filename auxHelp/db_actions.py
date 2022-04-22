@@ -150,11 +150,48 @@ class Actions:
 
         return rowDict
 
+    def get_derivation_account(self, path):
+        self.cur.execute("SELECT account, address_index, change FROM wallet_derivation WHERE path =? ", (path,))
+        details = self.cur.fetchall()
+        return details
+
+    def get_number_of_accounts(self):
+        self.cur.execute("SELECT COUNT (DISTINCT(account)) FROM wallet_derivation")
+        result = self.cur.fetchone()
+        return result
+
+    def get_number_of_wallets(self):
+        self.cur.execute('SELECT COUNT(*) FROM wallet_core')
+        result = self.cur.fetchone()
+        return result
+
     def check_derivation_address(self, path):
         self.cur.execute("SELECT path FROM wallet_derivation WHERE path=?", (path,))
         result = self.cur.fetchone()
-
-        if result:
+        print(result)
+        if result is not None:
             return True
         else:
             return False
+
+    def get_last_index(self, account):
+        f_account = str(account) + "'"
+        # self.cur.execute("SELECT address_index FROM wallet_derivation WHERE rowID=(SELECT MAX(rowID) AND account =? "
+        #                  "FROM wallet_derivation)", (f_account,))
+        self.cur.execute("SELECT MAX(address_index) FROM wallet_derivation WHERE account=?",
+                         (f_account,))
+
+        result = self.cur.fetchone()
+        print(result)
+        if result[0] is not None:
+            return result[0]
+        else:
+            return -1
+
+
+db = Actions()
+a = db.get_last_index(4)
+#
+# a = db.get_number_of_accounts()
+# w = db.get_number_of_wallets()
+print("A: " + str(a))

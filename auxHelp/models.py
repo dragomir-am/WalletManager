@@ -20,7 +20,6 @@ class WalletDetails:
             6: "korean",
             7: "spanish"
         }
-        self.quantity = 0
         self.account = 0
         self.currency = {
             0: BitcoinMainnet,
@@ -29,8 +28,10 @@ class WalletDetails:
             3: EthereumMainnet
         }
         self.change = {
-            0: True,
-            1: False
+            0: False,
+            1: True
         }
         self.passphrase = ""
-        self.address_found = False
+        self.account_limit_reached = False
+        self.address_limit_reached = False
+

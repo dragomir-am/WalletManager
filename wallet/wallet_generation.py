@@ -1,4 +1,4 @@
-from auxHelp.models import WalletDetails
+from auxHelp.models import WalletDetails, User
 from wallet_constructor.cryptocurrencies import EthereumMainnet
 from wallet_constructor.derivations import BIP44Derivation
 from wallet_constructor.hd import BIP44HDWallet
@@ -8,49 +8,7 @@ from wallet_constructor import derivations
 
 db = Actions()
 w = WalletDetails()
-
-
-def derive_from_wallet(wallet, count, change, account, class_coin):
-    bip44_hdwallet: BIP44HDWallet = BIP44HDWallet(cryptocurrency=class_coin)
-
-    # bip44_hdwallet.clean_derivation()
-
-    bip44_hdwallet.from_mnemonic(wallet['mnemonic'], wallet['language'], wallet['passphrase'])
-
-    # Create derivation table
-    db.create_derivation_wallet()
-
-    # Get wallet fingerprint to server as reference for derivation table
-    fingerprint = str(bip44_hdwallet.finger_print())
-
-    # Loop and derive number of addresses requested from path
-    for address_index in range(count):
-        # Derivation from BIP44 derivation path
-        bip44_derivation: BIP44Derivation = BIP44Derivation(
-            cryptocurrency=class_coin, account=account, change=change, address=address_index
-        )
-        # Derive BIP44HDWallet addresses
-        bip44_hdwallet.from_path(path=bip44_derivation)
-        # Insert wallet derivation details in db
-        if address_index == 0:
-            fix_path = str(bip44_hdwallet.path())
-            unique = db.check_derivation_address(fix_path)
-            if unique is False:
-                w.address_found = True
-                return
-            else:
-                db.insert_wallet_derivation(str(bip44_hdwallet.symbol()), str(address_index), ("m/" + fix_path[17:]),
-                                            str(bip44_hdwallet.address()), str(("0x" + bip44_hdwallet.private_key())),
-                                            str(bip44_derivation.change(change)), str(bip44_derivation.account()),
-                                            fingerprint)
-
-        elif db.check_derivation_address(str(bip44_hdwallet.path())) is True:
-            db.insert_wallet_derivation(str(bip44_hdwallet.symbol()), str(address_index), str(bip44_hdwallet.path()),
-                                        str(bip44_hdwallet.address()), str(("0x" + bip44_hdwallet.private_key())),
-                                        str(bip44_derivation.change(change)), str(bip44_derivation.account()),
-                                        fingerprint)
-
-        bip44_hdwallet.clean_derivation()
+u = User()
 
 
 def generate_wallet(language, passphrase, coin, account, email) -> object:
@@ -97,9 +55,55 @@ def generate_wallet(language, passphrase, coin, account, email) -> object:
     db.insert_wallet_core(complete_wallet_keys_list, complete_wallet_values_list)
 
 
+def derive_from_wallet(wallet, change, account, class_coin):
+    bip44_hdwallet: BIP44HDWallet = BIP44HDWallet(cryptocurrency=class_coin)
+    address_index = int(db.get_last_index(account)) + 1
+    address_index, account = verify_address(address_index, account)
+
+    if address_index > 9:
+        address_index, account = verify_address(address_index, account)
+
+    bip44_hdwallet.from_mnemonic(wallet['mnemonic'], wallet['language'], wallet['passphrase'])
+
+    bip44_derivation: BIP44Derivation = BIP44Derivation(
+        cryptocurrency=class_coin, account=account, change=change, address=address_index
+    )
+
+    # Create derivation table
+    db.create_derivation_wallet()
+
+    # Get wallet fingerprint to server as reference for derivation table
+    fingerprint = str(bip44_hdwallet.finger_print())
+
+    # Loop and derive number of addresses requested from path
+    # Derivation from BIP44 derivation path
+
+    # Derive BIP44HDWallet addresses
+    bip44_hdwallet.from_path(path=bip44_derivation)
+    # Insert wallet derivation details in db
+
+    fix_path = str(bip44_hdwallet.path())
+    db.insert_wallet_derivation(str(bip44_hdwallet.symbol()), str(address_index), ("m/" + fix_path[17:]),
+                                str(bip44_hdwallet.address()), str(("0x" + bip44_hdwallet.private_key())),
+                                str(bip44_derivation.change(change)), str(bip44_derivation.account()),
+                                fingerprint)
+
+
+def verify_address(index, account):
+    if index > 9:
+        account = account + 1
+        index = int(db.get_last_index(account)) + 1
+        w.address_limit_reached = True
+    elif account > 9:
+        w.account_limit_reached = True
+        print(w.account_limit_reached)
+
+    return index, account
+
+
 # generate_wallet("english", "alex", EthereumMainnet, 0, "test@yahoo.com")
 
 wwallet = db.get_wallet_core("b3e12435")
 # print(wallet)
-derive_from_wallet(wwallet, 5, True, 5, EthereumMainnet)
-print(w.address_found)
+# derive_from_wallet(wwallet, 1, True, 0, EthereumMainnet)
+derive_from_wallet(wwallet, True, 6, EthereumMainnet)
