@@ -93,8 +93,7 @@ class Actions:
                     currency TEXT,
                     public_key TEXT,
                     private_key TEXT,
-                    email TEXT,
-                    FOREIGN KEY(email) REFERENCES login_info(email)
+                    email TEXT
                     )""")
 
         self.conn.commit()
@@ -103,9 +102,10 @@ class Actions:
         self.cur.execute(f"""
                    CREATE TABLE IF NOT EXISTS external_classic_wallet (
                    currency TEXT,
-                   email TEXT,
                    mnemonic TEXT,
-                   FOREIGN KEY(email) REFERENCES login_info(email)
+                   language TEXT,
+                   passphrase TEXT,
+                   email TEXT
                    )""")
 
         self.conn.commit()
@@ -124,14 +124,14 @@ class Actions:
         self.cur.execute(query, (coin, index, path, address, private_key, change, account, fingerprint))
         self.conn.commit()
 
-    def insert_external_classic_wallet(self, coin, public_key, private_key):
-        query = f"INSERT INTO external_classic_wallet (coin, public_key, private_key) VALUES (?,?,?) "
-        self.cur.execute(query, (coin, public_key, private_key))
+    def insert_external_classic_wallet(self, currency, public_key, private_key, email):
+        query = f"INSERT INTO external_classic_wallet (currency, public_key, private_key, email) VALUES (?,?,?,?) "
+        self.cur.execute(query, (currency, public_key, private_key, email))
         self.conn.commit()
 
-    def insert_external_hd_wallet(self, coin, mnemonic, email):
-        query = f"INSERT INTO wallet_derivation (coin, mnemonic) VALUES (?,?,?) "
-        self.cur.execute(query, (coin, mnemonic, email))
+    def insert_external_hd_wallet(self, currency, mnemonic, language, passphrase, email):
+        query = f"INSERT INTO wallet_derivation (currency, mnemonic, language, passphrase, email) VALUES (?,?,?,?,?) "
+        self.cur.execute(query, (currency, mnemonic, language, passphrase, email))
         self.conn.commit()
 
     def get_wallet_derivation(self):
@@ -150,10 +150,13 @@ class Actions:
 
         return rowDict
 
-    def get_derivation_account(self, path):
-        self.cur.execute("SELECT account, address_index, change FROM wallet_derivation WHERE path =? ", (path,))
-        details = self.cur.fetchall()
-        return details
+    def get_external_classic_wallet(self):
+        query = "SELECT currency, public_key, private_key FROM external_classic_wallet"
+        self.cur.execute(query)
+        self.conn.commit()
+        rows = self.cur.fetchall()
+
+        return rows
 
     def get_number_of_accounts(self):
         self.cur.execute("SELECT COUNT (DISTINCT(account)) FROM wallet_derivation")
@@ -164,15 +167,6 @@ class Actions:
         self.cur.execute('SELECT COUNT(*) FROM wallet_core')
         result = self.cur.fetchone()
         return result
-
-    def check_derivation_address(self, path):
-        self.cur.execute("SELECT path FROM wallet_derivation WHERE path=?", (path,))
-        result = self.cur.fetchone()
-        print(result)
-        if result is not None:
-            return True
-        else:
-            return False
 
     def get_last_index(self, account):
         f_account = str(account) + "'"

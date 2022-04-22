@@ -35,3 +35,11 @@ class WalletDetails:
         self.account_limit_reached = False
         self.address_limit_reached = False
 
+
+class ExternalWallets:
+    def __init__(self):
+        self.currency = ""
+        self.public_key = ""
+        self.private_key = ""
+
+

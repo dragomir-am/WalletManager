@@ -11,14 +11,15 @@ from PyQt5.uic import loadUi
 from auxHelp.db_actions import Actions
 
 from auxHelp.email_verification import email_syntax, send_email_otp
-from auxHelp.models import User, WalletDetails
+from auxHelp.models import User, WalletDetails, ExternalWallets
 # from blockchain.infura import Infura
 from wallet.wallet_generation import generate_wallet
 
 path_dir: str = r"C:\Users\drago\PycharmProjects\WalletManager\AppGUI\\"
 db = Actions()
 user = User()
-wm = WalletDetails()
+wd = WalletDetails()
+ec = ExternalWallets()
 
 
 def open_register():
@@ -135,9 +136,6 @@ class CreateWallet(QMainWindow):
         if self.language_comboBox.currentIndex() != -1:
             self.get_language()
 
-        if self.quantity_comboBox.currentIndex() != -1:
-            self.get_quantity()
-
         if self.coin_comboBox.currentIndex() != -1:
             self.get_coin()
 
@@ -146,10 +144,13 @@ class CreateWallet(QMainWindow):
 
         self.generate_button.clicked.connect(self.create_wallet)
 
+        self.ec_insert_btn.clicked.connect(self.add_external_classic_wallet)
+
     def tabChanged(self):
         self.tab_index = self.tabWidget.currentIndex()
         if self.tab_index == 1:
             self.get_view_wallets_data()
+        # elif self.tab_index == 3:
 
     def clear_input(self):
         self.passphrase_field.clear()
@@ -164,10 +165,10 @@ class CreateWallet(QMainWindow):
             self.tabWidget.setCurrentIndex(cur_position + 1)
 
     def get_options(self):
-        self.language = wm.language[self.language_comboBox.currentIndex()]
-        wm.quantity = int(self.quantity_comboBox.currentText())
-        self.coin = wm.currency[self.coin_comboBox.currentIndex()]
-        self.purpose = wm.change[self.purpose_comboBox.currentIndex()]
+        self.language = wd.language[self.language_comboBox.currentIndex()]
+        wd.quantity = int(self.quantity_comboBox.currentText())
+        self.coin = wd.currency[self.coin_comboBox.currentIndex()]
+        self.purpose = wd.change[self.purpose_comboBox.currentIndex()]
 
     def prev_tab(self):
         cur_position = self.tabWidget.currentIndex()
@@ -175,10 +176,10 @@ class CreateWallet(QMainWindow):
             self.tabWidget.setCurrentIndex(cur_position - 1)
 
     def create_wallet(self):
-        wm.passphrase = self.passphrase_field.text()
+        wd.passphrase = self.passphrase_field.text()
         self.get_options()
         try:
-            generate_wallet(self.language, wm.passphrase, self.coin, wm.quantity, user.email)
+            generate_wallet(self.language, wd.passphrase, self.coin, wd.account, user.email)
         except:
             self.success = False
 
@@ -197,6 +198,31 @@ class CreateWallet(QMainWindow):
             self.tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[3]))
             self.tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
             row_index += 1
+
+    def add_external_classic_wallet(self):
+        db.create_external_classic_wallet()
+
+        ec.currency = self.ec_coin_field.text()
+        ec.public_key = self.ec_pubk_field.text()
+        ec.private_key = self.ec_privk_field.text()
+
+        db.insert_external_classic_wallet(ec.currency, ec.public_key, ec.private_key, "test@yahoo.com")
+
+        data = db.get_external_classic_wallet()
+
+        self.ec_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.ec_tableWidget.insertRow(row_index)
+            self.ec_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.ec_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.ec_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            row_index += 1
+
+
+
+
+
 
 
 class Register(QDialog):
