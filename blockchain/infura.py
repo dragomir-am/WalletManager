@@ -1,3 +1,4 @@
+
 from web3 import Web3, HTTPProvider
 
 from blockchain.error_catch import InfuraErrorException
@@ -18,3 +19,6 @@ class Infura:
 
         return self.w3
 
+i = Infura()
+address = '0x0708F87A089a91C65d48721Aa941084648562287'
+i.w3.eth.getBalance(address)

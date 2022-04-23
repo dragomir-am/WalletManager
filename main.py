@@ -1,9 +1,4 @@
-import binascii
-import hashlib
-import os
-import sqlite3
 import sys
-import time
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog, QApplication, QMainWindow
@@ -69,8 +64,16 @@ def open_wallet_manager():
 def open_create_wallet():
     create_wallet = CreateWallet()
     widget.addWidget(create_wallet)
-    widget.setFixedWidth(791)
-    widget.setFixedHeight(511)
+    widget.setFixedWidth(588)
+    widget.setFixedHeight(488)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+def open_view_addresses():
+    view_addresses = ViewAddresses()
+    widget.addWidget(view_addresses)
+    widget.setFixedWidth(588)
+    widget.setFixedHeight(488)
     widget.setCurrentIndex(widget.currentIndex() + 1)
 
 
@@ -112,117 +115,6 @@ class WalletManager(QDialog):
         super(WalletManager, self).__init__()
         loadUi(path_dir + "wallet_manager.ui", self)
         self.create_wallet_btn.clicked.connect(open_create_wallet)
-
-
-class CreateWallet(QMainWindow):
-    def __init__(self):
-        super(CreateWallet, self).__init__()
-        loadUi(path_dir + "wallet_manager_2.ui", self)
-        self.language = ""
-        self.coin = ""
-        self.purpose = ""
-        self.success = True
-        self.tab_index = 0
-        number_wallets = str(db.get_number_of_wallets())
-        number_accounts = str(db.get_number_of_accounts())
-
-        self.counter_wallets.setText("Active Wallets: " + str(number_wallets[1]))
-        self.counter_accounts.setText("Active Accounts: " + str(number_accounts[1]))
-
-        self.tabWidget.currentChanged.connect(self.tabChanged)
-
-        self.passphrase_field.setEchoMode(QtWidgets.QLineEdit.Password)
-
-        if self.language_comboBox.currentIndex() != -1:
-            self.get_language()
-
-        if self.coin_comboBox.currentIndex() != -1:
-            self.get_coin()
-
-        if self.purpose_comboBox.currentIndex() != -1:
-            self.get_purpose()
-
-        self.generate_button.clicked.connect(self.create_wallet)
-
-        self.ec_insert_btn.clicked.connect(self.add_external_classic_wallet)
-
-    def tabChanged(self):
-        self.tab_index = self.tabWidget.currentIndex()
-        if self.tab_index == 1:
-            self.get_view_wallets_data()
-        # elif self.tab_index == 3:
-
-    def clear_input(self):
-        self.passphrase_field.clear()
-        self.language_comboBox.setCurrentIndex(-1)
-        self.quantity_comboBox.setCurrentIndex(-1)
-        self.coin_comboBox.setCurrentIndex(-1)
-        self.purpose_comboBox.setCurrentIndex(-1)
-
-    def next_tab(self):
-        cur_position = self.tabWidget.currentIndex()
-        if cur_position < len(self.tabWidget) - 1:
-            self.tabWidget.setCurrentIndex(cur_position + 1)
-
-    def get_options(self):
-        self.language = wd.language[self.language_comboBox.currentIndex()]
-        wd.quantity = int(self.quantity_comboBox.currentText())
-        self.coin = wd.currency[self.coin_comboBox.currentIndex()]
-        self.purpose = wd.change[self.purpose_comboBox.currentIndex()]
-
-    def prev_tab(self):
-        cur_position = self.tabWidget.currentIndex()
-        if cur_position > 0:
-            self.tabWidget.setCurrentIndex(cur_position - 1)
-
-    def create_wallet(self):
-        wd.passphrase = self.passphrase_field.text()
-        self.get_options()
-        try:
-            generate_wallet(self.language, wd.passphrase, self.coin, wd.account, user.email)
-        except:
-            self.success = False
-
-        if self.success:
-            self.clear_input()
-            self.next_tab()
-
-    def get_view_wallets_data(self):
-        data = db.get_wallet_derivation()
-        self.tableWidget.setRowCount(0)
-        row_index = 0
-        for row in data:
-            self.tableWidget.insertRow(row_index)
-            self.tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
-            self.tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[2]))
-            self.tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[3]))
-            self.tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
-            row_index += 1
-
-    def add_external_classic_wallet(self):
-        db.create_external_classic_wallet()
-
-        ec.currency = self.ec_coin_field.text()
-        ec.public_key = self.ec_pubk_field.text()
-        ec.private_key = self.ec_privk_field.text()
-
-        db.insert_external_classic_wallet(ec.currency, ec.public_key, ec.private_key, "test@yahoo.com")
-
-        data = db.get_external_classic_wallet()
-
-        self.ec_tableWidget.setRowCount(0)
-        row_index = 0
-        for row in data:
-            self.ec_tableWidget.insertRow(row_index)
-            self.ec_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
-            self.ec_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
-            self.ec_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
-            row_index += 1
-
-
-
-
-
 
 
 class Register(QDialog):
@@ -363,14 +255,72 @@ class ChangePassword(QDialog):
             login.update_message(message="Password updated, you can login now!")
 
 
+class CreateWallet(QDialog):
+    def __init__(self):
+        super(CreateWallet, self).__init__()
+        loadUi(path_dir + "create_wallet_option.ui", self)
+        self.language = ""
+        self.coin = ""
+        self.change = ""
+        number_wallets = str(db.get_number_of_wallets())
+
+        self.counter_wallets.setText("Active Wallets: " + str(number_wallets[1]))
+
+        self.generate_button.clicked.connect(self.create_wallet)
+
+    def get_options(self):
+        self.language = wd.language[self.language_comboBox.currentIndex()]
+        self.coin = wd.currency_class[self.coin_comboBox.currentIndex()]
+
+    def clear_input(self):
+        self.language_comboBox.setCurrentIndex(-1)
+        self.coin_comboBox.setCurrentIndex(-1)
+        self.passphrase_field.clear()
+        self.name_field.clear()
+
+    def create_wallet(self):
+        wd.passphrase = self.passphrase_field.text()
+        wd.wallet_name = self.name_field.text()
+
+        self.get_options()
+
+        try:
+            generate_wallet(self.language, wd.passphrase, self.coin, wd.account, user.email)
+            wd.wallet_generated = "Wallet generated, derive new address now!"
+            self.clear_input()
+            open_view_addresses()
+        except:
+            wd.wallet_generated = "Wallet generation failed, try again!"
+
+
+class AddExternalWallets(QDialog):
+    def __init__(self):
+        super(AddExternalWallets, self).__init__()
+        loadUi(path_dir + "add_external_wallets.ui", self)
+
+
+class ViewAddresses(QDialog):
+    def __init__(self):
+        super(ViewAddresses, self).__init__()
+        loadUi(path_dir + "view_addresses.ui", self)
+
+
+class ViewDetails(QDialog):
+    def __init__(self):
+        super(ViewDetails, self).__init__()
+        loadUi(path_dir + "view_details.ui", self)
+
+
 app = QApplication(sys.argv)
-# login = Login()
+login = Login()
 widget = QtWidgets.QStackedWidget()
-wallet = CreateWallet()  # open_create_wallet()
-widget.addWidget(wallet)
+cr = CreateWallet()
+# wallet = CreateWallet()  # open_create_wallet()
+# widget.addWidget(wallet)
 # widget.addWidget(login)
 widget.show()
 # open_login()
+open_create_wallet()
 
 try:
     sys.exit(app.exec_())

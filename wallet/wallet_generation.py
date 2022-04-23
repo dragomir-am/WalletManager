@@ -1,4 +1,5 @@
 from auxHelp.models import WalletDetails, User
+from wallet_constructor.cryptocurrencies import EthereumMainnet
 from wallet_constructor.derivations import BIP44Derivation
 from wallet_constructor.hd import BIP44HDWallet
 from wallet_constructor.utils import generate_mnemonic
@@ -103,6 +104,5 @@ def verify_address(index, account):
 # generate_wallet("english", "alex", EthereumMainnet, 0, "test@yahoo.com")
 
 # wwallet = db.get_wallet_core("b3e12435")
-# # print(wallet)
-# # derive_from_wallet(wwallet, 1, True, 0, EthereumMainnet)
+# # # print(wallet)
 # derive_from_wallet(wwallet, True, 6, EthereumMainnet)

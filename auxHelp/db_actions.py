@@ -100,7 +100,7 @@ class Actions:
 
     def create_external_hd_wallet(self):
         self.cur.execute(f"""
-                   CREATE TABLE IF NOT EXISTS external_classic_wallet (
+                   CREATE TABLE IF NOT EXISTS external_hd_wallet (
                    currency TEXT,
                    mnemonic TEXT,
                    language TEXT,
@@ -130,8 +130,9 @@ class Actions:
         self.conn.commit()
 
     def insert_external_hd_wallet(self, currency, mnemonic, language, passphrase, email):
-        query = f"INSERT INTO wallet_derivation (currency, mnemonic, language, passphrase, email) VALUES (?,?,?,?,?) "
-        self.cur.execute(query, (currency, mnemonic, language, passphrase, email))
+        query = "INSERT INTO external_hd_wallet (currency, mnemonic, language, passphrase, email) " \
+                "VALUES (?,?,?,?,?) "
+        self.cur.execute(query, (str(currency), str(mnemonic), str(language), str(passphrase), str(email)))
         self.conn.commit()
 
     def get_wallet_derivation(self):
@@ -158,6 +159,14 @@ class Actions:
 
         return rows
 
+    def get_external_hd_wallet(self):
+        query = "SELECT currency, mnemonic, language, passphrase FROM external_hd_wallet"
+        self.cur.execute(query)
+        self.conn.commit()
+        rows = self.cur.fetchall()
+
+        return rows
+
     def get_number_of_accounts(self):
         self.cur.execute("SELECT COUNT (DISTINCT(account)) FROM wallet_derivation")
         result = self.cur.fetchone()
@@ -176,7 +185,7 @@ class Actions:
                          (f_account,))
 
         result = self.cur.fetchone()
-        print(result)
+
         if result[0] is not None:
             return result[0]
         else:
@@ -184,8 +193,6 @@ class Actions:
 
 
 db = Actions()
-a = db.get_last_index(4)
 #
 # a = db.get_number_of_accounts()
 # w = db.get_number_of_wallets()
-print("A: " + str(a))

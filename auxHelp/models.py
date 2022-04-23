@@ -21,7 +21,7 @@ class WalletDetails:
             7: "spanish"
         }
         self.account = 0
-        self.currency = {
+        self.currency_class = {
             0: BitcoinMainnet,
             1: LitecoinMainnet,
             2: DogecoinMainnet,
@@ -34,6 +34,9 @@ class WalletDetails:
         self.passphrase = ""
         self.account_limit_reached = False
         self.address_limit_reached = False
+        self.mnemonic = ""
+        self.wallet_generated = ""
+        self.wallet_name = ""
 
 
 class ExternalWallets:
@@ -41,5 +44,3 @@ class ExternalWallets:
         self.currency = ""
         self.public_key = ""
         self.private_key = ""
-
-
