@@ -21,4 +21,10 @@ class Infura:
 
 i = Infura()
 address = '0x0708F87A089a91C65d48721Aa941084648562287'
-i.w3.eth.getBalance(address)
+a = i.w3.eth.get_balance(address)
+print(a)
+# import CryptGo
+# import os
+# print(Crypto.__file__);
+# print (dir(Crypto));
+# print(os.listdir(os.path.dirname(Crypto.__file__)))
