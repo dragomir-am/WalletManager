@@ -67,7 +67,8 @@ class Actions:
 
         self.cur.execute("""
                     CREATE TABLE IF NOT EXISTS wallet_core(
-                    {columns}
+                    {columns},
+                    name TEXT
                     )
                     """.format(columns=columns))
         self.conn.commit()
@@ -82,7 +83,8 @@ class Actions:
                     private_key TEXT,
                     change TEXT,
                     account TEXT,
-                    finger_print TEXT
+                    finger_print TEXT,
+                    name TEXT
                     )""")
 
         self.conn.commit()
@@ -93,7 +95,8 @@ class Actions:
                     currency TEXT,
                     public_key TEXT,
                     private_key TEXT,
-                    email TEXT
+                    email TEXT,
+                    name TEXT
                     )""")
 
         self.conn.commit()
@@ -105,7 +108,8 @@ class Actions:
                    mnemonic TEXT,
                    language TEXT,
                    passphrase TEXT,
-                   email TEXT
+                   email TEXT,
+                   name TEXT
                    )""")
 
         self.conn.commit()
@@ -118,21 +122,22 @@ class Actions:
         self.cur.execute(query, wallet_values)
         self.conn.commit()
 
-    def insert_wallet_derivation(self, coin, index, path, address, private_key, change, account, fingerprint):
+    def insert_wallet_derivation(self, coin, index, path, address, private_key, change, account, fingerprint, name):
         query = f"INSERT INTO wallet_derivation (coin, address_index, path, address, private_key, " \
-                f"change, account, finger_print) VALUES (?,?,?,?,?,?,?,?) "
-        self.cur.execute(query, (coin, index, path, address, private_key, change, account, fingerprint))
+                f"change, account, finger_print, name) VALUES (?,?,?,?,?,?,?,?,?) "
+        self.cur.execute(query, (coin, index, path, address, private_key, change, account, fingerprint, name))
         self.conn.commit()
 
-    def insert_external_classic_wallet(self, currency, public_key, private_key, email):
-        query = f"INSERT INTO external_classic_wallet (currency, public_key, private_key, email) VALUES (?,?,?,?) "
-        self.cur.execute(query, (currency, public_key, private_key, email))
+    def insert_external_classic_wallet(self, currency, public_key, private_key, email, name):
+        query = f"INSERT INTO external_classic_wallet (currency, public_key, private_key, email, name) " \
+                f"VALUES (?,?,?,?,?) "
+        self.cur.execute(query, (currency, public_key, private_key, email, name))
         self.conn.commit()
 
-    def insert_external_hd_wallet(self, currency, mnemonic, language, passphrase, email):
-        query = "INSERT INTO external_hd_wallet (currency, mnemonic, language, passphrase, email) " \
-                "VALUES (?,?,?,?,?) "
-        self.cur.execute(query, (str(currency), str(mnemonic), str(language), str(passphrase), str(email)))
+    def insert_external_hd_wallet(self, currency, mnemonic, language, passphrase, email, name):
+        query = "INSERT INTO external_hd_wallet (currency, mnemonic, language, passphrase, email, name) " \
+                "VALUES (?,?,?,?,?,?) "
+        self.cur.execute(query, (str(currency), str(mnemonic), str(language), str(passphrase), str(email), str(name)))
         self.conn.commit()
 
     def get_wallet_derivation(self):
@@ -152,7 +157,7 @@ class Actions:
         return rowDict
 
     def get_external_classic_wallet(self):
-        query = "SELECT currency, public_key, private_key FROM external_classic_wallet"
+        query = "SELECT currency, public_key, private_key, name FROM external_classic_wallet"
         self.cur.execute(query)
         self.conn.commit()
         rows = self.cur.fetchall()
@@ -160,7 +165,7 @@ class Actions:
         return rows
 
     def get_external_hd_wallet(self):
-        query = "SELECT currency, mnemonic, language, passphrase FROM external_hd_wallet"
+        query = "SELECT currency, mnemonic, language, passphrase, name FROM external_hd_wallet"
         self.cur.execute(query)
         self.conn.commit()
         rows = self.cur.fetchall()
@@ -179,8 +184,7 @@ class Actions:
 
     def get_last_index(self, account):
         f_account = str(account) + "'"
-        # self.cur.execute("SELECT address_index FROM wallet_derivation WHERE rowID=(SELECT MAX(rowID) AND account =? "
-        #                  "FROM wallet_derivation)", (f_account,))
+
         self.cur.execute("SELECT MAX(address_index) FROM wallet_derivation WHERE account=?",
                          (f_account,))
 
@@ -190,6 +194,16 @@ class Actions:
             return result[0]
         else:
             return -1
+
+    def get_wallet_names(self):
+        self.cur.execute("SELECT (DISTINCT(name)) FROM wallet_core")
+        result = self.cur.fetchone()
+        return result
+
+    def get_account_list(self):
+        self.cur.execute("SELECT (DISTINCT(account)) FROM wallet_derivation")
+        result = self.cur.fetchone()
+        return result
 
 
 db = Actions()

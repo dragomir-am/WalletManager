@@ -35,14 +35,10 @@ def open_login():
 
 def open_otp(email):
     otp_window = OTP_window()
-    # widget.addWidget(otp_window)
-    # widget.setFixedWidth(603)
-    # widget.setFixedHeight(397)
     otp_window.setFixedWidth(603)
     otp_window.setFixedHeight(397)
     user.otp = send_email_otp(email)
     otp_window.exec()
-    # widget.setCurrentIndex(widget.currentIndex() + 1)
 
 
 def open_change_password():
@@ -72,6 +68,22 @@ def open_create_wallet():
 def open_view_addresses():
     view_addresses = ViewAddresses()
     widget.addWidget(view_addresses)
+    widget.setFixedWidth(970)
+    widget.setFixedHeight(510)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+def open_add_external():
+    add_external = AddExternalWallets()
+    widget.addWidget(add_external)
+    widget.setFixedWidth(935)
+    widget.setFixedHeight(616)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+def open_generate_addresses():
+    gen_add = GenerateAddresses()
+    widget.addWidget(gen_add)
     widget.setFixedWidth(588)
     widget.setFixedHeight(488)
     widget.setCurrentIndex(widget.currentIndex() + 1)
@@ -114,7 +126,12 @@ class WalletManager(QDialog):
     def __init__(self):
         super(WalletManager, self).__init__()
         loadUi(path_dir + "wallet_manager.ui", self)
+
         self.create_wallet_btn.clicked.connect(open_create_wallet)
+
+        self.view_wallets_btn.clicked.connect(open_view_addresses)
+
+        self.add_ext_wallet_btn.clicked.connect(open_add_external)
 
 
 class Register(QDialog):
@@ -258,7 +275,7 @@ class ChangePassword(QDialog):
 class CreateWallet(QDialog):
     def __init__(self):
         super(CreateWallet, self).__init__()
-        loadUi(path_dir + "create_wallet_option.ui", self)
+        loadUi(path_dir + "create_wallet.ui", self)
         self.language = ""
         self.coin = ""
         self.change = ""
@@ -267,6 +284,8 @@ class CreateWallet(QDialog):
         self.counter_wallets.setText("Active Wallets: " + str(number_wallets[1]))
 
         self.generate_button.clicked.connect(self.create_wallet)
+
+        self.back_btn.clicked.connect(open_wallet_manager)
 
     def get_options(self):
         self.language = wd.language[self.language_comboBox.currentIndex()]
@@ -297,12 +316,97 @@ class AddExternalWallets(QDialog):
     def __init__(self):
         super(AddExternalWallets, self).__init__()
         loadUi(path_dir + "add_external_wallets.ui", self)
+        self.coin = ""
+        self.language = ""
+
+        self.ec_back_btn.clicked.connect(open_wallet_manager)
+
+        self.ehd_back_btn.clicked.connect(open_wallet_manager)
+
+        self.ehd_add_btn.clicked.connect(self.add_external_hd_wallet)
+
+        self.ec.add_btn.clicked.connect(self.add_external_classic_wallet)
+
+    def add_external_classic_wallet(self):
+        db.create_external_classic_wallet()
+
+        ec.currency = self.ec_coin_field.text()
+        ec.public_key = self.ec_pubk_field.text()
+        ec.private_key = self.ec_privk_field.text()
+
+        db.insert_external_classic_wallet(ec.currency, ec.public_key, ec.private_key, "test@yahoo.com", "wallet1")
+
+        data = db.get_external_classic_wallet()
+
+        self.ec_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.ec_tableWidget.insertRow(row_index)
+            self.ec_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.ec_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.ec_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            self.ec_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[3]))
+            row_index += 1
+
+    def add_external_hd_wallet(self):
+        db.create_external_hd_wallet()
+
+        wd.passphrase = self.ehd_passphrase_field.text()
+        self.language = wd.language[self.ehd_language_comboBox.currentIndex()]
+        self.coin = self.ehd_currency_comboBox.currentText()
+        wd.mnemonic = self.ehd_mnemonic_field.text()
+
+        db.insert_external_hd_wallet(self.coin, wd.mnemonic, self.language, wd.passphrase, "test@yahoo.com")
+
+        data = db.get_external_hd_wallet()
+
+        self.ehd_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.ehd_tableWidget.insertRow(row_index)
+            self.ehd_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.ehd_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.ehd_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            self.ehd_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[3]))
+            self.ehd_tableWidget.setItem(row_index, 4, QtWidgets.QTableWidgetItem(row[4]))
+            row_index += 1
 
 
 class ViewAddresses(QDialog):
     def __init__(self):
         super(ViewAddresses, self).__init__()
         loadUi(path_dir + "view_addresses.ui", self)
+
+        self.back_btn.clicked.connect(open_wallet_manager)
+
+        self.add_btn.clicked.connect(open_generate_addresses)
+
+        self.get_view_wallets_data()
+
+    def get_view_wallets_data(self):
+        data = db.get_wallet_derivation()
+        self.vw_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.vw_tableWidget.insertRow(row_index)
+            self.vw_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.vw_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[2]))
+            self.vw_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[3]))
+            self.vw_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
+            self.vw_tableWidget.setItem(row_index, 4, QtWidgets.QTableWidgetItem(row[5]))
+            self.vw_tableWidget.setItem(row_index, 5, QtWidgets.QTableWidgetItem(row[6]))
+            self.vw_tableWidget.setItem(row_index, 6, QtWidgets.QTableWidgetItem(row[8]))
+            row_index += 1
+
+
+class GenerateAddresses(QDialog):
+    def __init__(self):
+        super(GenerateAddresses, self).__init__()
+        loadUi(path_dir + "add_address.ui", self)
+
+        number_acc = str(db.get_number_of_accounts())
+
+        self.counter_accounts.setText("Active Accounts: " + str(number_acc[1]))
 
 
 class ViewDetails(QDialog):
@@ -315,12 +419,14 @@ app = QApplication(sys.argv)
 login = Login()
 widget = QtWidgets.QStackedWidget()
 cr = CreateWallet()
+mr = WalletManager()
 # wallet = CreateWallet()  # open_create_wallet()
 # widget.addWidget(wallet)
 # widget.addWidget(login)
 widget.show()
+open_wallet_manager()
 # open_login()
-open_create_wallet()
+# open_create_wallet()
 
 try:
     sys.exit(app.exec_())
