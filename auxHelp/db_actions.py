@@ -2,11 +2,10 @@ import sqlite3
 
 from auxHelp.secure_login import verify_password, hash_password
 
-
 # from pysqlcipher3 import dbapi2 as sqlite3
-# from models import User
-#
-# user = User()
+from .models import WalletDetails
+
+wd = WalletDetails()
 
 
 class Actions:
@@ -77,14 +76,14 @@ class Actions:
         self.cur.execute(f"""
                     CREATE TABLE IF NOT EXISTS wallet_derivation ( 
                     coin TEXT,
-                    address_index TEXT,
-                    path TEXT,
+                    name TEXT,
+                    account TEXT,
                     address TEXT,
                     private_key TEXT,
                     change TEXT,
-                    account TEXT,
-                    finger_print TEXT,
-                    name TEXT
+                    path TEXT,
+                    address_index TEXT,
+                    finger_print TEXT
                     )""")
 
         self.conn.commit()
@@ -148,8 +147,8 @@ class Actions:
 
         return rows
 
-    def get_wallet_core(self, fingerprint):
-        query = f"SELECT mnemonic, language, passphrase FROM wallet_core WHERE finger_print='{fingerprint}' "
+    def get_wallet_core(self, name):
+        query = f"SELECT mnemonic, language, passphrase, cryptocurrency FROM wallet_core WHERE name='{name}' "
         self.cur.execute(query)
         row = self.cur.fetchone()
         rowDict = dict(zip([c[0] for c in self.cur.description], row))
@@ -196,17 +195,21 @@ class Actions:
             return -1
 
     def get_wallet_names(self):
-        self.cur.execute("SELECT (DISTINCT(name)) FROM wallet_core")
-        result = self.cur.fetchone()
+        self.conn.row_factory = sqlite3.Row
+        self.cur.execute("SELECT DISTINCT name FROM wallet_core")
+        data = self.cur.fetchall()
+
+        result = [i[0] for i in data]
+
         return result
 
     def get_account_list(self):
-        self.cur.execute("SELECT (DISTINCT(account)) FROM wallet_derivation")
-        result = self.cur.fetchone()
-        return result
+        self.cur.execute("SELECT DISTINCT account FROM wallet_derivation")
+        data = self.cur.fetchall()
+        result = [i[0] for i in data]
 
+        if len(data) is 0:
+            return wd.account
+        else:
+            return result
 
-db = Actions()
-#
-# a = db.get_number_of_accounts()
-# w = db.get_number_of_wallets()

@@ -22,10 +22,10 @@ class WalletDetails:
         }
         self.account = 0
         self.currency_class = {
-            0: BitcoinMainnet,
-            1: LitecoinMainnet,
-            2: DogecoinMainnet,
-            3: EthereumMainnet
+            'Bitcoin': BitcoinMainnet,
+            'Litecoin': LitecoinMainnet,
+            'Dogecoin': DogecoinMainnet,
+            'Ethereum': EthereumMainnet
         }
         self.change = {
             0: False,
@@ -37,6 +37,9 @@ class WalletDetails:
         self.mnemonic = ""
         self.wallet_generated = ""
         self.wallet_name = ""
+
+        # self.accounts_number = str(db.get_number_of_accounts())
+        # self.wallets_number = str(db.get_number_of_wallets())
 
 
 class ExternalWallets:

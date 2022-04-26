@@ -8,7 +8,7 @@ from auxHelp.db_actions import Actions
 from auxHelp.email_verification import email_syntax, send_email_otp
 from auxHelp.models import User, WalletDetails, ExternalWallets
 # from blockchain.infura import Infura
-from wallet.wallet_generation import generate_wallet
+from wallet.wallet_generation import generate_wallet, derive_from_wallet
 
 path_dir: str = r"C:\Users\drago\PycharmProjects\WalletManager\AppGUI\\"
 db = Actions()
@@ -279,9 +279,9 @@ class CreateWallet(QDialog):
         self.language = ""
         self.coin = ""
         self.change = ""
-        number_wallets = str(db.get_number_of_wallets())
-
-        self.counter_wallets.setText("Active Wallets: " + str(number_wallets[1]))
+        # number_wallets = wd.wallets_number
+        #
+        # self.counter_wallets.setText("Active Wallets: " + str(number_wallets[1]))
 
         self.generate_button.clicked.connect(self.create_wallet)
 
@@ -289,7 +289,7 @@ class CreateWallet(QDialog):
 
     def get_options(self):
         self.language = wd.language[self.language_comboBox.currentIndex()]
-        self.coin = wd.currency_class[self.coin_comboBox.currentIndex()]
+        self.coin = wd.currency_class[self.coin_comboBox.currentText()]
 
     def clear_input(self):
         self.language_comboBox.setCurrentIndex(-1)
@@ -304,12 +304,14 @@ class CreateWallet(QDialog):
         self.get_options()
 
         try:
-            generate_wallet(self.language, wd.passphrase, self.coin, wd.account, user.email)
+            generate_wallet(self.language, wd.passphrase, self.coin, wd.account, user.email, wd.wallet_name)
             wd.wallet_generated = "Wallet generated, derive new address now!"
             self.clear_input()
             open_view_addresses()
         except:
             wd.wallet_generated = "Wallet generation failed, try again!"
+
+        print(wd.wallet_generated)
 
 
 class AddExternalWallets(QDialog):
@@ -390,12 +392,13 @@ class ViewAddresses(QDialog):
         for row in data:
             self.vw_tableWidget.insertRow(row_index)
             self.vw_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
-            self.vw_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[2]))
-            self.vw_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[3]))
-            self.vw_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
-            self.vw_tableWidget.setItem(row_index, 4, QtWidgets.QTableWidgetItem(row[5]))
-            self.vw_tableWidget.setItem(row_index, 5, QtWidgets.QTableWidgetItem(row[6]))
-            self.vw_tableWidget.setItem(row_index, 6, QtWidgets.QTableWidgetItem(row[8]))
+            self.vw_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.vw_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            self.vw_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[3]))
+            self.vw_tableWidget.setItem(row_index, 4, QtWidgets.QTableWidgetItem(row[4]))
+            self.vw_tableWidget.setItem(row_index, 5, QtWidgets.QTableWidgetItem(row[5]))
+            self.vw_tableWidget.setItem(row_index, 6, QtWidgets.QTableWidgetItem(row[6]))
+
             row_index += 1
 
 
@@ -404,9 +407,48 @@ class GenerateAddresses(QDialog):
         super(GenerateAddresses, self).__init__()
         loadUi(path_dir + "add_address.ui", self)
 
-        number_acc = str(db.get_number_of_accounts())
+        db.create_derivation_wallet()
 
-        self.counter_accounts.setText("Active Accounts: " + str(number_acc[1]))
+        # number_acc = wd.accounts_number
+
+        # self.counter_accounts.setText("Active Accounts: " + str(number_acc[1]))
+
+        wallet_id_options = db.get_wallet_names()
+        accounts_list_options = db.get_account_list()
+
+        if accounts_list_options == 0:
+            self.acc_comboBox.addItem(str(0))
+        else:
+            for option in accounts_list_options:
+                self.acc_comboBox.addItem(str(option))
+
+        for option in wallet_id_options:
+            self.name_comboBox.addItem(str(option))
+
+        self.back_btn.clicked.connect(open_wallet_manager)
+
+        self.generate_button.clicked.connect(self.derive_address)
+
+    def clear_input(self):
+        self.name_comboBox.setCurrentIndex(-1)
+        self.acc_comboBox.setCurrentIndex(-1)
+        self.change_comboBox.setCurrentIndex(-1)
+
+    def derive_address(self):
+        wd.wallet_name = self.name_comboBox.currentText()
+        wd.account = self.acc_comboBox.currentText()
+        wd.change = self.change_comboBox.currentIndex()
+
+        wallet = db.get_wallet_core(wd.wallet_name)
+
+        # print(wallet)
+
+        # try:
+        derive_from_wallet(wallet, wd.change, wd.account, wd.currency_class[wallet['cryptocurrency']], wd.wallet_name)
+        self.clear_input()
+        open_view_addresses()
+        # except:
+        #     print("Error")
 
 
 class ViewDetails(QDialog):
@@ -420,11 +462,13 @@ login = Login()
 widget = QtWidgets.QStackedWidget()
 cr = CreateWallet()
 mr = WalletManager()
+add = GenerateAddresses()
 # wallet = CreateWallet()  # open_create_wallet()
 # widget.addWidget(wallet)
 # widget.addWidget(login)
 widget.show()
-open_wallet_manager()
+# open_wallet_manager()
+open_generate_addresses()
 # open_login()
 # open_create_wallet()
 

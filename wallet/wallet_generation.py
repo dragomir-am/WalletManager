@@ -11,7 +11,7 @@ w = WalletDetails()
 u = User()
 
 
-def generate_wallet(language, passphrase, coin, account, email) -> object:
+def generate_wallet(language, passphrase, coin, account, email, name) -> object:
     # Generate mnemonic words
     MNEMONIC: str = generate_mnemonic(language=language, strength=256)
     # Secret passphrase/password for mnemonic
@@ -33,6 +33,7 @@ def generate_wallet(language, passphrase, coin, account, email) -> object:
     wallet_dict['path'] = str(derivations.BIP44Derivation(cryptocurrency=COIN))
     wallet_dict['email'] = email
     wallet_dict['account'] = account
+    wallet_dict['name'] = name
     dict_addresses = wallet_dict['addresses']
 
     # Get list of dictionary addresses keys and values
@@ -55,13 +56,14 @@ def generate_wallet(language, passphrase, coin, account, email) -> object:
     db.insert_wallet_core(complete_wallet_keys_list, complete_wallet_values_list)
 
 
-def derive_from_wallet(wallet, change, account, class_coin):
+def derive_from_wallet(wallet, change, account, class_coin, name):
     bip44_hdwallet: BIP44HDWallet = BIP44HDWallet(cryptocurrency=class_coin)
-    address_index = int(db.get_last_index(account)) + 1
-    address_index, account = verify_address(address_index, account)
+    format_account = account[:1]
+    address_index = int(db.get_last_index(format_account)) + 1
+    address_index, account = verify_address(address_index, format_account)
 
     if address_index > 9:
-        address_index, account = verify_address(address_index, account)
+        address_index, account = verify_address(address_index, format_account)
 
     bip44_hdwallet.from_mnemonic(wallet['mnemonic'], wallet['language'], wallet['passphrase'])
 
@@ -86,7 +88,7 @@ def derive_from_wallet(wallet, change, account, class_coin):
     db.insert_wallet_derivation(str(bip44_hdwallet.symbol()), str(address_index), ("m/" + fix_path[17:]),
                                 str(bip44_hdwallet.address()), str(("0x" + bip44_hdwallet.private_key())),
                                 str(bip44_derivation.change(change)), str(bip44_derivation.account()),
-                                fingerprint)
+                                fingerprint, name)
 
 
 def verify_address(index, account):
@@ -94,7 +96,7 @@ def verify_address(index, account):
         account = account + 1
         index = int(db.get_last_index(account)) + 1
         w.address_limit_reached = True
-    elif account > 9:
+    elif int(account) > 9:
         w.account_limit_reached = True
         print(w.account_limit_reached)
 
