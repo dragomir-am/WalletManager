@@ -6,6 +6,8 @@ class User:
         self.email = ""
         self.password = ""
         self.otp = ""
+        self.qr_pin = ""
+        self.generated_pin = ""
 
 
 class WalletDetails:
@@ -38,8 +40,7 @@ class WalletDetails:
         self.wallet_generated = ""
         self.wallet_name = ""
 
-        # self.accounts_number = str(db.get_number_of_accounts())
-        # self.wallets_number = str(db.get_number_of_wallets())
+
 
 
 class ExternalWallets:

@@ -1,7 +1,8 @@
 import sys
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QDialog, QApplication
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.uic import loadUi
 from auxHelp.db_actions import Actions
 
@@ -9,6 +10,7 @@ from auxHelp.email_verification import email_syntax, send_email_otp
 from auxHelp.models import User, WalletDetails, ExternalWallets
 # from blockchain.infura import Infura
 from wallet.wallet_generation import generate_wallet, derive_from_wallet
+from auxHelp.secure_login import generate_qr_image
 
 path_dir: str = r"C:\Users\drago\PycharmProjects\WalletManager\AppGUI\\"
 db = Actions()
@@ -89,37 +91,67 @@ def open_generate_addresses():
     widget.setCurrentIndex(widget.currentIndex() + 1)
 
 
+def show_popup():
+    msg = QMessageBox()
+    msg.setWindowTitle("Scan ME!")
+    msg.setText("Scan the QR Code using the Mobile App to get the 6-digit code")
+    msg.setIconPixmap(QPixmap("C:/Users/drago/PycharmProjects/WalletManager/auxHelp/myqr.svg"))
+    msg.show()
+    msg.exec()
+
+
 class Login(QDialog):
     def __init__(self):
         super(Login, self).__init__()
         loadUi(path_dir + "login.ui", self)
+
         self.pass_field.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.login_login_btn.clicked.connect(self.login_function)
+
         self.login_noacc_btn.clicked.connect(open_register)
+
         self.login_forgot_btn.clicked.connect(open_change_password)
 
-    # Adjust logic for message display
-    def login_function(self):
+        self.qr_btn.clicked.connect(self.qr_2fa)
+
+        self.login_login_btn.setVisible(False)
+
+        self.login_login_btn.clicked.connect(self.login_function)
+
+    def qr_2fa(self):
         user.email = self.email_field.text()
         user.password = self.pass_field.text()
-        if len(user.email) == 0 or len(user.password) == 0:
-            self.empty_error.setText("Please enter both username and password")
+        print(user.password)
+        user.generated_pin = generate_qr_image(user.password)
+        show_popup()
+        self.qr_btn.setVisible(False)
+        self.login_login_btn.setVisible(True)
+
+    def login_function(self):
+
+        user.qr_pin = self.mfa_field.text()
+
+        if len(user.email) < 1 or len(user.password) < 1 or len(user.qr_pin) < 1:
+            self.empty_error.setText("Please input all fields!!")
             self.acc_error.setText("")
             self.pass_error.setText("")
+            self.mfa_error.setText("")
         elif db.find_user_account(user.email) is not True:
             self.acc_error.setText("Account does not exist!")
             self.empty_error.setText("")
             self.pass_error.setText("")
+            self.mfa_error.setText("")
         elif db.validate_user_login(user.email, user.password) is not True:
-            self.pass_error.setText("Incorrect password")
+            self.pass_error.setText("Incorrect password!")
+            self.empty_error.setText("")
+            self.acc_error.setText("")
+            self.mfa_error.setText("")
+        if str(user.generated_pin) != user.qr_pin:
+            self.mfa_error.setText("Incorrect Pin!")
+            self.pass_error.setText("")
             self.empty_error.setText("")
             self.empty_error.setText("")
         else:
-            self.title_label.setText("Login Successful")
             open_wallet_manager()
-
-    def update_message(self, message):
-        self.title_label.setText(message)
 
 
 class WalletManager(QDialog):
@@ -279,9 +311,9 @@ class CreateWallet(QDialog):
         self.language = ""
         self.coin = ""
         self.change = ""
-        # number_wallets = wd.wallets_number
-        #
-        # self.counter_wallets.setText("Active Wallets: " + str(number_wallets[1]))
+        number_wallets = str(db.get_number_of_wallets())
+
+        self.counter_wallets.setText("Active Wallets: " + str(number_wallets[1]))
 
         self.generate_button.clicked.connect(self.create_wallet)
 
@@ -409,9 +441,9 @@ class GenerateAddresses(QDialog):
 
         db.create_derivation_wallet()
 
-        # number_acc = wd.accounts_number
+        number_acc = str(db.get_number_of_accounts())
 
-        # self.counter_accounts.setText("Active Accounts: " + str(number_acc[1]))
+        self.counter_accounts.setText("Active Accounts: " + str(number_acc[1]))
 
         wallet_id_options = db.get_wallet_names()
         accounts_list_options = db.get_account_list()
@@ -443,12 +475,13 @@ class GenerateAddresses(QDialog):
 
         # print(wallet)
 
-        # try:
-        derive_from_wallet(wallet, wd.change, wd.account, wd.currency_class[wallet['cryptocurrency']], wd.wallet_name)
-        self.clear_input()
-        open_view_addresses()
-        # except:
-        #     print("Error")
+        try:
+            derive_from_wallet(wallet, wd.change, wd.account, wd.currency_class[wallet['cryptocurrency']],
+                               wd.wallet_name)
+            self.clear_input()
+            open_view_addresses()
+        except:
+            print("Error")
 
 
 class ViewDetails(QDialog):
@@ -468,8 +501,9 @@ add = GenerateAddresses()
 # widget.addWidget(login)
 widget.show()
 # open_wallet_manager()
-open_generate_addresses()
-# open_login()
+# open_generate_addresses()
+
+open_login()
 # open_create_wallet()
 
 try:

@@ -122,7 +122,7 @@ class HDWallet:
         :param passphrase: Mnemonic passphrase or password, default to ``None``.
         :type passphrase: str
         :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        <hdwallet.hdwallet.HDWallet object at 0x000001E8BFB98D60>
+        <wallet_constructor.hd.HDWallet object at 0x000001E8BFB98D60>
         """
 
         if not is_entropy(entropy=entropy):
@@ -372,7 +372,7 @@ class HDWallet:
     def _derive_key_by_index(self, index) -> Optional["HDWallet"]:
 
         if not self._root_private_key and not self._root_public_key:
-            raise ValueError("You can't drive this master key.")
+            raise ValueError("You can't derive this master key.")
 
         i_str = struct.pack(">L", index)
         if index & BIP32KEY_HARDEN:

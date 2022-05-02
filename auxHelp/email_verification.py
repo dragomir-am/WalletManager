@@ -40,9 +40,11 @@ def email_syntax(email):
     return email_valid
 
 
+sender, password = read_credentials()
+
+
 def send_email_otp(email):
     port = 465
-    sender, password = read_credentials()
     email_formatter = EmailMessage()
     otp = otp_generator(10)
     email_formatter['Subject'] = 'Registration Verification code'
@@ -57,5 +59,5 @@ def send_email_otp(email):
         server.login(sender, password)
         server.send_message(email_formatter)
 
-    print("sent email!")
+    print("email sent!")
     return otp

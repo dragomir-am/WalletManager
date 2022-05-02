@@ -79,7 +79,7 @@
     <property name="styleSheet">
      <string notr="true">font: 28pt &quot;Calibri&quot;;
 color:rgb(255, 255, 255);
-background:transparent;
+background-color:rgb(170, 0, 0);
 </string>
     </property>
     <property name="text">
@@ -88,11 +88,14 @@ background:transparent;
     <property name="checkable">
      <bool>false</bool>
     </property>
+    <property name="autoDefault">
+     <bool>false</bool>
+    </property>
     <property name="default">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
     <property name="flat">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="login_noacc_btn">
@@ -462,6 +465,41 @@ color:rgb(255, 255, 255)</string>
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QPushButton" name="qr_btn">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>420</y>
+      <width>151</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="mouseTracking">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">
+font: 28pt &quot;Calibri&quot;;
+color:rgb(255, 255, 255);
+background-color:rgb(170, 0, 0);
+</string>
+    </property>
+    <property name="text">
+     <string>Open 2FA</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+    <property name="autoDefault">
+     <bool>false</bool>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
    <zorder>bgd_label</zorder>
    <zorder>login_login_btn</zorder>
    <zorder>login_noacc_btn</zorder>
@@ -477,10 +515,9 @@ color:rgb(255, 255, 255)</string>
    <zorder>mfa_field</zorder>
    <zorder>mfa_error</zorder>
    <zorder>title_label</zorder>
+   <zorder>qr_btn</zorder>
   </widget>
  </widget>
- <resources>
-  <include location="main_pict.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
