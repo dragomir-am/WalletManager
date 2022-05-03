@@ -1,3 +1,4 @@
+import os
 import sys
 
 from PyQt5 import QtWidgets
@@ -8,7 +9,7 @@ from auxHelp.db_actions import Actions
 
 from auxHelp.email_verification import email_syntax, send_email_otp
 from auxHelp.models import User, WalletDetails, ExternalWallets
-# from blockchain.infura import Infura
+from blockchain.infura import Infura, get_transactions
 from wallet.wallet_generation import generate_wallet, derive_from_wallet
 from auxHelp.secure_login import generate_qr_image
 
@@ -17,6 +18,7 @@ db = Actions()
 user = User()
 wd = WalletDetails()
 ec = ExternalWallets()
+infura = Infura()
 
 
 def open_register():
@@ -70,6 +72,14 @@ def open_create_wallet():
 def open_view_addresses():
     view_addresses = ViewAddresses()
     widget.addWidget(view_addresses)
+    widget.setFixedWidth(970)
+    widget.setFixedHeight(510)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+def open_view_transactions():
+    view_transactions = ViewTransactions()
+    widget.addWidget(view_transactions)
     widget.setFixedWidth(970)
     widget.setFixedHeight(510)
     widget.setCurrentIndex(widget.currentIndex() + 1)
@@ -151,6 +161,7 @@ class Login(QDialog):
             self.empty_error.setText("")
             self.empty_error.setText("")
         else:
+            os.remove("C:/Users/drago/PycharmProjects/WalletManager/auxHelp/myqr.svg")
             open_wallet_manager()
 
 
@@ -359,7 +370,11 @@ class AddExternalWallets(QDialog):
 
         self.ehd_add_btn.clicked.connect(self.add_external_hd_wallet)
 
-        self.ec.add_btn.clicked.connect(self.add_external_classic_wallet)
+        self.ec_add_btn.clicked.connect(self.add_external_classic_wallet)
+
+        self.ehd_load_btn.clicked.connect(self.update_ehd_table_view)
+
+        self.ec_load_btn.clicked.connect(self.update_ec_table_view)
 
     def add_external_classic_wallet(self):
         db.create_external_classic_wallet()
@@ -367,8 +382,8 @@ class AddExternalWallets(QDialog):
         ec.currency = self.ec_coin_field.text()
         ec.public_key = self.ec_pubk_field.text()
         ec.private_key = self.ec_privk_field.text()
-
-        db.insert_external_classic_wallet(ec.currency, ec.public_key, ec.private_key, "test@yahoo.com", "wallet1")
+        ec.name = self.ec_wname_field.text()
+        db.insert_external_classic_wallet(ec.currency, ec.public_key, ec.private_key, user.email, ec.name)
 
         data = db.get_external_classic_wallet()
 
@@ -382,15 +397,43 @@ class AddExternalWallets(QDialog):
             self.ec_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[3]))
             row_index += 1
 
+    def update_ec_table_view(self):
+        data = db.get_external_classic_wallet()
+
+        self.ec_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.ec_tableWidget.insertRow(row_index)
+            self.ec_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.ec_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.ec_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            self.ec_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[3]))
+            row_index += 1
+
+    def update_ehd_table_view(self):
+        data = db.get_external_hd_wallet()
+
+        self.ehd_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.ehd_tableWidget.insertRow(row_index)
+            self.ehd_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.ehd_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.ehd_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            self.ehd_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
+            row_index += 1
+
     def add_external_hd_wallet(self):
         db.create_external_hd_wallet()
 
+        wd.wallet_name = self.ehd_wname_field.text()
         wd.passphrase = self.ehd_passphrase_field.text()
         self.language = wd.language[self.ehd_language_comboBox.currentIndex()]
         self.coin = self.ehd_currency_comboBox.currentText()
         wd.mnemonic = self.ehd_mnemonic_field.text()
 
-        db.insert_external_hd_wallet(self.coin, wd.mnemonic, self.language, wd.passphrase, "test@yahoo.com")
+        db.insert_external_hd_wallet(self.coin, wd.mnemonic, self.language, wd.passphrase,
+                                     user.email, wd.wallet_name)
 
         data = db.get_external_hd_wallet()
 
@@ -401,8 +444,7 @@ class AddExternalWallets(QDialog):
             self.ehd_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
             self.ehd_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
             self.ehd_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
-            self.ehd_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[3]))
-            self.ehd_tableWidget.setItem(row_index, 4, QtWidgets.QTableWidgetItem(row[4]))
+            self.ehd_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
             row_index += 1
 
 
@@ -416,6 +458,17 @@ class ViewAddresses(QDialog):
         self.add_btn.clicked.connect(open_generate_addresses)
 
         self.get_view_wallets_data()
+
+        data = db.get_addresses_list()
+
+        self.lcdNumber.display("")
+
+        for i in range(len(data)):
+            self.addresses_comboBox.addItem(data[i])
+
+        self.addresses_comboBox.setCurrentIndex(-1)
+
+        self.addresses_comboBox.currentIndexChanged.connect(self.get_balance)
 
     def get_view_wallets_data(self):
         data = db.get_wallet_derivation()
@@ -432,6 +485,14 @@ class ViewAddresses(QDialog):
             self.vw_tableWidget.setItem(row_index, 6, QtWidgets.QTableWidgetItem(row[6]))
 
             row_index += 1
+
+    def get_balance(self):
+
+        eth_value = 10 ** 18
+
+        address = self.addresses_comboBox.currentText()
+        balance = int(infura.w3.eth.get_balance(address) / eth_value)
+        self.lcdNumber.display(balance)
 
 
 class GenerateAddresses(QDialog):
@@ -484,10 +545,32 @@ class GenerateAddresses(QDialog):
             print("Error")
 
 
-class ViewDetails(QDialog):
+class ViewTransactions(QDialog):
     def __init__(self):
-        super(ViewDetails, self).__init__()
-        loadUi(path_dir + "view_details.ui", self)
+        super(ViewTransactions, self).__init__()
+        loadUi(path_dir + "view_transactions.ui", self)
+
+        data = db.get_addresses_list()
+
+        for i in range(len(data)):
+            self.addresses_comboBox.addItem(data[i])
+
+        self.addresses_comboBox.setCurrentIndex(-1)
+
+        self.addresses_comboBox.currentIndexChanged.connect(self.show_address_transaction_history)
+
+    def show_address_transaction_history(self):
+        address = self.addresses_comboBox.currentText()
+        get_transactions(address=address)
+        with open("trans.txt") as f:
+            if os.stat("trans.txt").st_size == 0:
+                self.console_text.setPlainText(address + " has no transactions - this looks like a brand new address")
+            else:
+                for line in f:
+
+                    self.console_text.appendPlainText(line)
+        f.close()
+        os.remove("trans.txt")
 
 
 app = QApplication(sys.argv)
@@ -501,9 +584,10 @@ add = GenerateAddresses()
 # widget.addWidget(login)
 widget.show()
 # open_wallet_manager()
+open_view_transactions()
 # open_generate_addresses()
 
-open_login()
+# open_login()
 # open_create_wallet()
 
 try:

@@ -213,3 +213,19 @@ class Actions:
         else:
             return result
 
+    def get_addresses_list(self):
+        self.conn.row_factory = sqlite3.Row
+        self.cur.execute("SELECT address from wallet_derivation")
+        data = self.cur.fetchall()
+
+        result = [i[0] for i in data]
+
+        return result
+
+
+# db = Actions()
+#
+# a = db.get_addresses_list()
+# print(a)
+
+

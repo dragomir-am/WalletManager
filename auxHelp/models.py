@@ -3,7 +3,7 @@ from wallet_constructor.cryptocurrencies import BitcoinMainnet, LitecoinMainnet,
 
 class User:
     def __init__(self):
-        self.email = ""
+        self.email = "bob"
         self.password = ""
         self.otp = ""
         self.qr_pin = ""
@@ -41,10 +41,9 @@ class WalletDetails:
         self.wallet_name = ""
 
 
-
-
 class ExternalWallets:
     def __init__(self):
         self.currency = ""
         self.public_key = ""
         self.private_key = ""
+        self.name = ""

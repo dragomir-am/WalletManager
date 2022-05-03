@@ -268,7 +268,7 @@ QScrollBar:horizontal {
     <property name="styleSheet">
      <string notr="true">background-color:rgb(86, 1, 9);
 color:rgb(255, 255, 255);
-font: 700 14pt &quot;Arial&quot;;</string>
+font: 700 12pt &quot;Arial&quot;;</string>
     </property>
     <property name="text">
      <string>Add new address</string>
@@ -289,7 +289,7 @@ font: 700 14pt &quot;Arial&quot;;</string>
     <property name="styleSheet">
      <string notr="true">background-color:rgb(86, 1, 9);
 color:rgb(255, 255, 255);
-font: 700 14pt &quot;Arial&quot;;</string>
+font: 700 12pt &quot;Arial&quot;;</string>
     </property>
     <property name="text">
      <string>View Transactions</string>
@@ -374,9 +374,12 @@ color:rgb(255, 255, 255)</string>
       <rect>
        <x>500</x>
        <y>70</y>
-       <width>81</width>
+       <width>131</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
      </property>
      <property name="styleSheet">
       <string notr="true">QLCDNumber{
@@ -386,6 +389,18 @@ color:rgb(255, 255, 255)</string>
   border-radius: 10px;
   color: rgb(255, 255, 255);
 }</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="smallDecimalPoint">
+      <bool>true</bool>
+     </property>
+     <property name="digitCount">
+      <number>10</number>
+     </property>
+     <property name="segmentStyle">
+      <enum>QLCDNumber::Filled</enum>
      </property>
     </widget>
    </widget>

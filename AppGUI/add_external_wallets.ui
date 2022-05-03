@@ -248,7 +248,7 @@ QScrollBar:horizontal {
       <string/>
      </property>
     </widget>
-    <widget class="QLineEdit" name="name_field">
+    <widget class="QLineEdit" name="ec_wname_field">
      <property name="geometry">
       <rect>
        <x>350</x>
@@ -278,7 +278,7 @@ color: rgb(255, 255, 255);</string>
       <bool>false</bool>
      </property>
     </widget>
-    <widget class="QLineEdit" name="currency_field">
+    <widget class="QLineEdit" name="ec_coin_field">
      <property name="geometry">
       <rect>
        <x>350</x>
@@ -299,7 +299,7 @@ color: rgb(255, 255, 255);</string>
       <bool>false</bool>
      </property>
      <property name="echoMode">
-      <enum>QLineEdit::Password</enum>
+      <enum>QLineEdit::Normal</enum>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -340,7 +340,7 @@ color: rgb(255, 255, 255);</string>
       <string/>
      </property>
     </widget>
-    <widget class="QLineEdit" name="privkey_field">
+    <widget class="QLineEdit" name="ec_privk_field">
      <property name="geometry">
       <rect>
        <x>290</x>
@@ -361,7 +361,7 @@ color: rgb(255, 255, 255);</string>
       <bool>false</bool>
      </property>
      <property name="echoMode">
-      <enum>QLineEdit::Password</enum>
+      <enum>QLineEdit::Normal</enum>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -402,7 +402,7 @@ color: rgb(255, 255, 255);</string>
       <string/>
      </property>
     </widget>
-    <widget class="QLineEdit" name="pubkey_field">
+    <widget class="QLineEdit" name="ec_pubk_field">
      <property name="geometry">
       <rect>
        <x>290</x>
@@ -423,7 +423,7 @@ color: rgb(255, 255, 255);</string>
       <bool>false</bool>
      </property>
      <property name="echoMode">
-      <enum>QLineEdit::Password</enum>
+      <enum>QLineEdit::Normal</enum>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -453,9 +453,9 @@ font: 700 14pt &quot;Arial&quot;;</string>
     <widget class="QPushButton" name="ec_add_btn">
      <property name="geometry">
       <rect>
-       <x>420</x>
+       <x>310</x>
        <y>260</y>
-       <width>111</width>
+       <width>121</width>
        <height>31</height>
       </rect>
      </property>
@@ -485,18 +485,37 @@ font: 700 14pt &quot;Arial&quot;;</string>
       <string/>
      </property>
     </widget>
+    <widget class="QPushButton" name="ec_load_btn">
+     <property name="geometry">
+      <rect>
+       <x>520</x>
+       <y>260</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color:rgb(86, 1, 9);
+color:rgb(255, 255, 255);
+font: 700 14pt &quot;Arial&quot;;</string>
+     </property>
+     <property name="text">
+      <string>Load Data</string>
+     </property>
+    </widget>
     <zorder>label</zorder>
     <zorder>ec_tableWidget</zorder>
     <zorder>bar</zorder>
     <zorder>bar_2</zorder>
-    <zorder>name_field</zorder>
-    <zorder>currency_field</zorder>
+    <zorder>ec_wname_field</zorder>
+    <zorder>ec_coin_field</zorder>
     <zorder>bar_3</zorder>
-    <zorder>privkey_field</zorder>
+    <zorder>ec_privk_field</zorder>
     <zorder>bar_4</zorder>
-    <zorder>pubkey_field</zorder>
+    <zorder>ec_pubk_field</zorder>
     <zorder>ec_back_btn</zorder>
     <zorder>ec_add_btn</zorder>
+    <zorder>ec_load_btn</zorder>
    </widget>
    <widget class="QWidget" name="hd_tab">
     <attribute name="title">
@@ -567,17 +586,6 @@ QScrollBar:horizontal {
      <column>
       <property name="text">
        <string>Language</string>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Passphrase</string>
       </property>
       <property name="font">
        <font>
@@ -722,9 +730,9 @@ color:rgb(255, 255, 255)</string>
     <widget class="QPushButton" name="ehd_add_btn">
      <property name="geometry">
       <rect>
-       <x>420</x>
+       <x>330</x>
        <y>260</y>
-       <width>111</width>
+       <width>121</width>
        <height>31</height>
       </rect>
      </property>
@@ -819,7 +827,7 @@ font: 700 14pt &quot;Arial&quot;;</string>
       <string/>
      </property>
     </widget>
-    <widget class="QLineEdit" name="mnemonic_field">
+    <widget class="QLineEdit" name="ehd_mnemonic_field">
      <property name="geometry">
       <rect>
        <x>290</x>
@@ -840,7 +848,7 @@ color: rgb(255, 255, 255);</string>
       <bool>false</bool>
      </property>
      <property name="echoMode">
-      <enum>QLineEdit::Password</enum>
+      <enum>QLineEdit::Normal</enum>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -849,7 +857,7 @@ color: rgb(255, 255, 255);</string>
       <string>Mnemonic</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="passphrase_field">
+    <widget class="QLineEdit" name="ehd_passphrase_field">
      <property name="geometry">
       <rect>
        <x>290</x>
@@ -921,7 +929,7 @@ color: rgb(255, 255, 255);</string>
       <string/>
      </property>
     </widget>
-    <widget class="QLineEdit" name="passphrase_field_2">
+    <widget class="QLineEdit" name="ehd_wname_field">
      <property name="geometry">
       <rect>
        <x>340</x>
@@ -983,6 +991,24 @@ color: rgb(255, 255, 255);</string>
       <string/>
      </property>
     </widget>
+    <widget class="QPushButton" name="ehd_load_btn">
+     <property name="geometry">
+      <rect>
+       <x>500</x>
+       <y>260</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color:rgb(86, 1, 9);
+color:rgb(255, 255, 255);
+font: 700 14pt &quot;Arial&quot;;</string>
+     </property>
+     <property name="text">
+      <string>Load Data</string>
+     </property>
+    </widget>
     <zorder>label_2</zorder>
     <zorder>ehd_tableWidget</zorder>
     <zorder>ehd_language_comboBox</zorder>
@@ -991,12 +1017,13 @@ color: rgb(255, 255, 255);</string>
     <zorder>ehd_back_btn</zorder>
     <zorder>bar_5</zorder>
     <zorder>bar_6</zorder>
-    <zorder>mnemonic_field</zorder>
-    <zorder>passphrase_field</zorder>
+    <zorder>ehd_mnemonic_field</zorder>
+    <zorder>ehd_passphrase_field</zorder>
     <zorder>currency_label</zorder>
     <zorder>language_label</zorder>
-    <zorder>passphrase_field_2</zorder>
+    <zorder>ehd_wname_field</zorder>
     <zorder>bar_7</zorder>
+    <zorder>ehd_load_btn</zorder>
    </widget>
   </widget>
  </widget>
