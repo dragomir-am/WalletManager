@@ -80,7 +80,7 @@ def open_view_addresses():
 def open_view_transactions():
     view_transactions = ViewTransactions()
     widget.addWidget(view_transactions)
-    widget.setFixedWidth(970)
+    widget.setFixedWidth(501)
     widget.setFixedHeight(510)
     widget.setCurrentIndex(widget.currentIndex() + 1)
 
@@ -457,6 +457,8 @@ class ViewAddresses(QDialog):
 
         self.add_btn.clicked.connect(open_generate_addresses)
 
+        self.view_transactions_btn(open_view_transactions)
+
         self.get_view_wallets_data()
 
         data = db.get_addresses_list()
@@ -559,6 +561,8 @@ class ViewTransactions(QDialog):
 
         self.addresses_comboBox.currentIndexChanged.connect(self.show_address_transaction_history)
 
+        self.back_btn.clicked.connect(open_wallet_manager)
+
     def show_address_transaction_history(self):
         address = self.addresses_comboBox.currentText()
         get_transactions(address=address)
@@ -567,7 +571,6 @@ class ViewTransactions(QDialog):
                 self.console_text.setPlainText(address + " has no transactions - this looks like a brand new address")
             else:
                 for line in f:
-
                     self.console_text.appendPlainText(line)
         f.close()
         os.remove("trans.txt")

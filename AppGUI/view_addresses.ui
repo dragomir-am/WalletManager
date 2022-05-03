@@ -399,9 +399,6 @@ color:rgb(255, 255, 255)</string>
      <property name="digitCount">
       <number>10</number>
      </property>
-     <property name="segmentStyle">
-      <enum>QLCDNumber::Filled</enum>
-     </property>
     </widget>
    </widget>
    <widget class="QPushButton" name="back_btn">
