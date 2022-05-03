@@ -587,10 +587,10 @@ add = GenerateAddresses()
 # widget.addWidget(login)
 widget.show()
 # open_wallet_manager()
-open_view_transactions()
+# open_view_transactions()
 # open_generate_addresses()
 
-# open_login()
+open_login()
 # open_create_wallet()
 
 try:

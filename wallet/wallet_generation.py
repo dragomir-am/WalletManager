@@ -18,7 +18,7 @@ def generate_wallet(language, passphrase, coin, account, email, name) -> object:
     PASSPHRASE: str = passphrase
     # Language option for mnemonic generation
     LANGUAGE: str = language
-    #
+    # Cryptocurrency class method
     COIN: classmethod = coin
 
     # Initialize BIP44HDWallet object
@@ -27,7 +27,6 @@ def generate_wallet(language, passphrase, coin, account, email, name) -> object:
     bip44_hdwallet.from_mnemonic(
         mnemonic=MNEMONIC, language=LANGUAGE, passphrase=PASSPHRASE
     )
-
     # Store and format wallet details
     wallet_dict = bip44_hdwallet.dumps()
     wallet_dict['path'] = str(derivations.BIP44Derivation(cryptocurrency=COIN))
@@ -39,18 +38,14 @@ def generate_wallet(language, passphrase, coin, account, email, name) -> object:
     # Get list of dictionary addresses keys and values
     dict_addresses_list = list(dict_addresses.keys())
     dict_addresses_values = list(dict_addresses.values())
-
     # Remove dictionary of addresses from wallet dictionary
     del wallet_dict['addresses']
-
     # Get list of keys from wallet dictionary and list of values
     wallet_dict_list = list(wallet_dict.keys())
     wallet_values_list = list(wallet_dict.values())
-
     # Join wallet list of value and keys with addresses list of values and keys
     complete_wallet_keys_list = wallet_dict_list + dict_addresses_list
     complete_wallet_values_list = wallet_values_list + dict_addresses_values
-
     # Create core wallet table and insert wallet details into db
     db.create_wallet_table(complete_wallet_keys_list)
     db.insert_wallet_core(complete_wallet_keys_list, complete_wallet_values_list)

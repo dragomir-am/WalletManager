@@ -122,7 +122,6 @@ class HDWallet:
         :param passphrase: Mnemonic passphrase or password, default to ``None``.
         :type passphrase: str
         :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        <wallet_constructor.hd.HDWallet object at 0x000001E8BFB98D60>
         """
 
         if not is_entropy(entropy=entropy):
@@ -246,7 +245,6 @@ class HDWallet:
         :type strict: bool
         :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
         """
-
         if not is_root_xpublic_key(xpublic_key=xpublic_key, symbol=self._cryptocurrency.SYMBOL):
             if strict:
                 raise ValueError("Invalid root xpublic key.")
