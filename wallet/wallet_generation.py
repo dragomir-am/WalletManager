@@ -1,5 +1,4 @@
 from auxHelp.models import WalletDetails, User
-from wallet_constructor.cryptocurrencies import EthereumMainnet
 from wallet_constructor.derivations import BIP44Derivation
 from wallet_constructor.hd import BIP44HDWallet
 from wallet_constructor.utils import generate_mnemonic
@@ -68,14 +67,10 @@ def derive_from_wallet(wallet, change, account, class_coin, name):
 
     # Create derivation table
     db.create_derivation_wallet()
-
     # Get wallet fingerprint to server as reference for derivation table
     fingerprint = str(bip44_hdwallet.finger_print())
 
-    # Loop and derive number of addresses requested from path
-    # Derivation from BIP44 derivation path
-
-    # Derive BIP44HDWallet addresses
+    # Derive BIP44HDWallet addresses from derivation path
     bip44_hdwallet.from_path(path=bip44_derivation)
     # Insert wallet derivation details in db
 

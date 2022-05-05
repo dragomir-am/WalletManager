@@ -56,20 +56,6 @@ INFINITY: Point = ecdsa.ellipticcurve.INFINITY
 
 
 class HDWallet:
-    """
-    Hierarchical Deterministic Wallet
-    :param symbol: Cryptocurrency symbol, defaults to ``ETH``.
-    :type symbol: str
-    :param cryptocurrency: Cryptocurrency instance, defaults to ``None``.
-    :type cryptocurrency: Cryptocurrency
-    :param semantic: Extended semantic, defaults to ``P2PKH``.
-    :type semantic: str
-    :param use_default_path: Use default derivation path, defaults to ``False``.
-    :type use_default_path: bool
-    :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-    .. note::
-        To initialize HDWallet symbol or cryptocurrency is required.
-    """
 
     def __init__(self, symbol: str = "ETH", cryptocurrency: Any = None,
                  semantic: Optional[str] = None, use_default_path: bool = False):
@@ -113,16 +99,6 @@ class HDWallet:
         self._root_index: int = 0
 
     def from_entropy(self, entropy: str, language: str = "english", passphrase: str = None) -> "HDWallet":
-        """
-        Master from Entropy hex string.
-        :param entropy: Entropy hex string.
-        :type entropy: str
-        :param language: Mnemonic language, default to ``english``.
-        :type language: str
-        :param passphrase: Mnemonic passphrase or password, default to ``None``.
-        :type passphrase: str
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
 
         if not is_entropy(entropy=entropy):
             raise ValueError("Invalid entropy.")
@@ -142,16 +118,7 @@ class HDWallet:
         return self.from_seed(seed=hexlify(self._seed).decode())
 
     def from_mnemonic(self, mnemonic: str, language: str = None, passphrase: str = None) -> "HDWallet":
-        """
-        Master from Mnemonic words.
-        :param mnemonic: Mnemonic words.
-        :type mnemonic: str
-        :param language: Mnemonic language, default to ``None``.
-        :type language: str
-        :param passphrase: Mnemonic passphrase or password, default to ``None``.
-        :type passphrase: str
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
+
 
         if not is_mnemonic(mnemonic=mnemonic, language=language):
             raise ValueError("Invalid mnemonic words.")
@@ -167,12 +134,7 @@ class HDWallet:
         return self.from_seed(seed=hexlify(self._seed).decode())
 
     def from_seed(self, seed: str) -> "HDWallet":
-        """
-        Master from Seed hex string.
-        :param seed: Seed hex string.
-        :type seed: str
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
+
 
         self._seed = unhexlify(seed)
         self._i = hmac.new(b"Bitcoin seed", get_bytes(seed), hashlib.sha512).digest()
@@ -195,14 +157,7 @@ class HDWallet:
         return self
 
     def from_xprivate_key(self, xprivate_key: str, strict: bool = False) -> "HDWallet":
-        """
-        Master from XPrivate Key.
-        :param xprivate_key: Root or Non-Root XPrivate key.
-        :type xprivate_key: str
-        :param strict: Strict for must be root xprivate key, default to ``False``.
-        :type strict: bool
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
+
 
         if not is_root_xprivate_key(xprivate_key=xprivate_key, symbol=self._cryptocurrency.SYMBOL):
             if strict:
@@ -237,14 +192,7 @@ class HDWallet:
         return self
 
     def from_xpublic_key(self, xpublic_key: str, strict: bool = False) -> "HDWallet":
-        """
-        Master from XPublic Key.
-        :param xpublic_key: Root or Non-Root XPublic key.
-        :type xpublic_key: str
-        :param strict: Strict for must be root xpublic key, default to ``False``.
-        :type strict: bool
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
+
         if not is_root_xpublic_key(xpublic_key=xpublic_key, symbol=self._cryptocurrency.SYMBOL):
             if strict:
                 raise ValueError("Invalid root xpublic key.")
@@ -280,12 +228,7 @@ class HDWallet:
         return self
 
     def from_wif(self, wif: str) -> "HDWallet":
-        """
-        Master from Wallet Important Format (WIF).
-        :param wif: Wallet important format.
-        :type wif: str
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
+
 
         raw = check_decode(wif)[:-1]
         if not raw.startswith(_unhexlify(self._cryptocurrency.WIF_SECRET_KEY)):
@@ -298,12 +241,7 @@ class HDWallet:
         return self
 
     def from_private_key(self, private_key: str) -> "HDWallet":
-        """
-        Master from Private Key.
-        :param private_key: Private key.
-        :type private_key: str
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
+
 
         self._private_key = unhexlify(private_key)
         self._key = ecdsa.SigningKey.from_string(self._private_key, curve=SECP256k1)
@@ -312,12 +250,6 @@ class HDWallet:
         return self
 
     def from_public_key(self, public_key: str) -> "HDWallet":
-        """
-        Master from Public Key.
-        :param public_key: Public key.
-        :type public_key: str
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
 
         self._verified_key = ecdsa.VerifyingKey.from_string(
             unhexlify(public_key), curve=SECP256k1
@@ -326,12 +258,7 @@ class HDWallet:
         return self
 
     def from_path(self, path: Union[str, Derivation]) -> "HDWallet":
-        """
-        Derivation from Path.
-        :param path: Derivation path.
-        :type path: str, Derivation
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
+
 
         if isinstance(path, Derivation):
             path = str(path)
@@ -348,14 +275,6 @@ class HDWallet:
         return self
 
     def from_index(self, index: int, hardened: bool = False) -> "HDWallet":
-        """
-        Derivation from Index.
-        :param index: Derivation index.
-        :type index: int
-        :param hardened: Hardened address, default to ``False``.
-        :type hardened: bool
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
 
         if not isinstance(index, int):
             raise ValueError("Bad index, Please import only integer number!")
@@ -447,12 +366,7 @@ class HDWallet:
             return None
 
     def root_xprivate_key(self, encoded: bool = True) -> Optional[str]:
-        """
-        Get Root XPrivate Key.
-        :param encoded: Encoded root xprivate key, default to ``True``.
-        :type encoded: bool
-        :returns: str -- Root XPrivate Key
-        """
+
 
         if self._semantic is None:
             return None
@@ -475,12 +389,6 @@ class HDWallet:
         )
 
     def root_xpublic_key(self, encoded: bool = True) -> Optional[str]:
-        """
-        Get Root XPublic Key.
-        :param encoded: Encoded root xpublic key, default to ``True``.
-        :type encoded: bool
-        :returns: str -- Root XPublic Key.
-        """
 
         if self._semantic is None:
             return None
@@ -508,12 +416,7 @@ class HDWallet:
         )
 
     def xprivate_key(self, encoded=True) -> Optional[str]:
-        """
-        Get XPrivate Key.
-        :param encoded: Encoded xprivate key, default to ``True``.
-        :type encoded: bool
-        :returns: str -- Root XPrivate Key.
-        """
+
 
         if self._semantic is None:
             return None
@@ -536,12 +439,7 @@ class HDWallet:
         )
 
     def xpublic_key(self, encoded: bool = True) -> Optional[str]:
-        """
-        Get XPublic Key.
-        :param encoded: Encoded xpublic key, default to ``True``.
-        :type encoded: bool
-        :returns: str -- XPublic Key.
-        """
+
 
         if self._semantic is None:
             return None
@@ -562,10 +460,7 @@ class HDWallet:
         )
 
     def clean_derivation(self) -> "HDWallet":
-        """
-        Clean derivation Path or Indexes.
-        :returns: HDWallet -- Hierarchical Deterministic Wallet instance.
-        """
+
 
         if self._root_private_key:
             self._path, self._path_class, self._depth, self._parent_fingerprint, self._index = (
@@ -585,12 +480,7 @@ class HDWallet:
         return self
 
     def uncompressed(self, compressed: Optional[str] = None) -> str:
-        """
-        Get Uncommpresed Public Key.
-        :param compressed: Compressed public key, default to ``None``.
-        :type compressed: str
-        :returns: str -- Uncommpresed public key.
-        """
+
 
         p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
         public_key = unhexlify(compressed) if compressed else unhexlify(self.compressed())
@@ -603,12 +493,7 @@ class HDWallet:
         return (public_key[1:33] + y).hex()
 
     def compressed(self, uncompressed: Optional[str] = None) -> str:
-        """
-        Get Compresed Public Key.
-        :param uncompressed: Uncompressed public key, default to ``None``.
-        :type uncompressed: str
-        :returns: str -- Commpresed public key.
-        """
+
 
         _verified_key = ecdsa.VerifyingKey.from_string(
             unhexlify(uncompressed), curve=SECP256k1
@@ -622,22 +507,11 @@ class HDWallet:
         return hexlify(ck).decode()
 
     def private_key(self) -> str:
-        """
-        Get Private Key.
-        :returns: str -- Private key.
-        """
 
         return hexlify(self._key.to_string()).decode() if self._key else None
 
     def public_key(self, compressed: bool = True, private_key: Optional[str] = None) -> str:
-        """
-        Get Public Key.
-        :param compressed: Compressed public key, default to ``True``.
-        :type compressed: bool
-        :param private_key: Private key hex string, default to ``None``.
-        :type private_key: str
-        :returns: str -- Public key.
-        """
+
 
         if private_key:
             key = ecdsa.SigningKey.from_string(
@@ -653,125 +527,64 @@ class HDWallet:
         return self.compressed() if compressed else self.uncompressed()
 
     def strength(self) -> Optional[int]:
-        """
-        Get Entropy strength.
-        :returns: int -- Entropy strength.
-        """
 
         return self._strength if self._strength else None
 
     def entropy(self) -> Optional[str]:
-        """
-        Get Entropy hex string.
-        :returns: str -- Entropy hex string.
-        """
 
         return hexlify(self._entropy).decode() if self._entropy else None
 
     def mnemonic(self) -> Optional[str]:
-        """
-        Get Mnemonic words.
-        :rtype: object
-        :returns: str -- Mnemonic words.
-        """
 
         return unicodedata.normalize("NFKD", self._mnemonic) if self._mnemonic else None
 
     def passphrase(self) -> Optional[str]:
-        """
-        Get Mnemonic passphrase.
-        :returns: str -- Mnemonic passphrase.
-        """
 
         return str(self._passphrase) if self._passphrase else None
 
     def language(self) -> Optional[str]:
-        """
-        Get Mnemonic language.
-        :returns: str -- Mnemonic language.
-        """
 
         return str(self._language) if self._language else None
 
     def cryptocurrency(self) -> Optional[str]:
-        """
-        Get Cryptocurrency name.
-        :returns: str -- Cryptocurrency name.
-        """
 
         return str(self._cryptocurrency.NAME)
 
     def symbol(self) -> Optional[str]:
-        """
-        Get Cryptocurrency symbol.
-        :returns: str -- Cryptocurrency symbol.
-        """
 
         return str(self._cryptocurrency.SYMBOL)
 
     def semantic(self) -> Optional[str]:
-        """
-        Get Extended semantic.
-        :returns: str -- Extended semantic.
-        """
 
         return self._semantic if self._semantic else None
 
     def network(self) -> Optional[str]:
-        """
-        Get Cryptocurrency network type.
-        :returns: str -- Cryptocurrency network type.
-        """
 
         return str(self._cryptocurrency.NETWORK)
 
     def seed(self) -> Optional[str]:
-        """
-        Get Seed hex string.
-        :returns: str -- Seed hex string.
-        """
 
         return hexlify(self._seed).decode() if self._seed else None
 
     def path(self) -> Optional[str]:
-        """
-        Get Derivation path.
-        :returns: str -- Drivation path.
-        """
 
         return str(self._path) if not self._path == "m" else None
 
     def chain_code(self) -> Optional[str]:
-        """
-        Get Chain code.
-        :returns: str -- Chain code.
-        """
 
         return hexlify(self._chain_code).decode() if self._chain_code else None
 
     def hash(self, private_key: str = None):
-        """
-        Get Public Key Hash.
-        :returns: str -- Identifier.
-        """
 
         return hashlib.new("ripemd160", sha256(unhexlify(self.public_key(
             private_key=private_key if private_key else self.private_key()
         ))).digest()).hexdigest()
 
     def finger_print(self) -> str:
-        """
-        Get Finger print.
-        :returns: str -- Finger print.
-        """
 
         return self.hash(self.private_key())[:8]
 
     def p2pkh_address(self) -> str:
-        """
-        Get Pay to Public Key Hash (P2PKH) address.
-        :returns: str -- P2PKH address.
-        """
 
         if self._cryptocurrency.SYMBOL in ["ETH", "ETHTEST"]:
             keccak_256 = sha3.keccak_256()
@@ -785,10 +598,6 @@ class HDWallet:
         return ensure_string(base58.b58encode_check(network_hash160_bytes))
 
     def p2sh_address(self) -> str:
-        """
-        Get Pay to Script Hash (P2SH) address.
-        :returns: str -- P2SH address.
-        """
 
         compressed_public_key = unhexlify(self.compressed())
         public_key_hash = hashlib.new("ripemd160", sha256(compressed_public_key).digest()).hexdigest()
@@ -798,10 +607,6 @@ class HDWallet:
         return ensure_string(base58.b58encode_check(network_hash160_bytes))
 
     def p2wpkh_address(self) -> Optional[str]:
-        """
-        Get Pay to Witness Public Key Hash (P2WPKH) address.
-        :returns: str -- P2WPKH address.
-        """
 
         compressed_public_key = unhexlify(self.compressed())
         public_key_hash = hashlib.new("ripemd160", sha256(compressed_public_key).digest()).digest()
@@ -810,10 +615,6 @@ class HDWallet:
         return ensure_string(encode(self._cryptocurrency.SEGWIT_ADDRESS.HRP, 0, public_key_hash))
 
     def p2wpkh_in_p2sh_address(self) -> Optional[str]:
-        """
-        Get P2WPKH nested in P2SH address.
-        :returns: str -- P2WPKH nested in P2SH address.
-        """
 
         compressed_public_key = unhexlify(self.compressed())
         public_key_hash = hashlib.new('ripemd160', sha256(compressed_public_key).digest()).hexdigest()
@@ -824,10 +625,6 @@ class HDWallet:
         return ensure_string(base58.b58encode_check(network_hash160_bytes))
 
     def p2wsh_address(self) -> Optional[str]:
-        """
-        Get Pay to Witness Script Hash (P2WSH) address.
-        :returns: str -- P2WSH address.
-        """
 
         compressed_public_key = unhexlify("5121" + self.compressed() + "51ae")
         script_hash = sha256(compressed_public_key).digest()
@@ -836,10 +633,6 @@ class HDWallet:
         return ensure_string(encode(self._cryptocurrency.SEGWIT_ADDRESS.HRP, 0, script_hash))
 
     def p2wsh_in_p2sh_address(self) -> Optional[str]:
-        """
-        Get P2WSH nested in P2SH address.
-        :returns: str -- P2WSH nested in P2SH address.
-        """
 
         compressed_public_key = unhexlify("5121" + self.compressed() + "51ae")
         script_hash = unhexlify("0020" + sha256(compressed_public_key).hexdigest())
@@ -850,19 +643,11 @@ class HDWallet:
         return ensure_string(base58.b58encode_check(network_hash160_bytes))
 
     def wif(self) -> Optional[str]:
-        """
-        Get Wallet Important Format.
-        :returns: str -- Wallet Important Format.
-        """
 
         return check_encode(
             _unhexlify(self._cryptocurrency.WIF_SECRET_KEY) + self._key.to_string() + b"\x01") if self._key else None
 
     def dumps(self) -> dict:
-        """
-        Get All HDWallet imformations.
-        :returns: dict -- All HDWallet imformations.
-        """
 
         return dict(
             cryptocurrency=self.cryptocurrency(),
@@ -900,20 +685,6 @@ class HDWallet:
 
 
 class BIP44HDWallet(HDWallet):
-    """
-    BIP44 Hierarchical Deterministic Wallet
-    :param symbol: Cryptocurrency symbol, defaults to ``BTC``.
-    :type symbol: str
-    :param cryptocurrency: Cryptocurrency instance, default to ``None``.
-    :type cryptocurrency: Cryptocurrency
-    :param account: Account index, default to ``0``.
-    :type account: int, tuple
-    :param change: Change addresses, default to ``False``.
-    :type change: bool
-    :param address: Address index, default to ``0``.
-    :type address: int, tuple
-    :returns: BIP44HDWallet -- BIP44 Hierarchical Deterministic Wallet instance.
-    """
 
     def __init__(self, symbol: str = "ETH", cryptocurrency: Any = None,
                  account: Union[int, Tuple[int, bool]] = 0,
@@ -929,9 +700,5 @@ class BIP44HDWallet(HDWallet):
         )
 
     def address(self) -> str:
-        """
-        Get Pay to Public Key Hash (P2PKH) address.
-        :returns: str -- P2PKH address.
-        """
 
         return self.p2pkh_address()

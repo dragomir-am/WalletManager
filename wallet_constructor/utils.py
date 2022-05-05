@@ -51,30 +51,10 @@ def get_bytes(string: AnyStr) -> bytes:
 
 
 def generate_passphrase(length: int = 32) -> str:
-    """
-    Generate entropy hex string.
-
-    :param length: Passphrase length, default to 32.
-    :type length: int
-
-    :returns: str -- Passphrase hex string.
-
-    """
-
     return str().join(choice(letters) for _ in range(length))
 
 
 def generate_entropy(strength: int = 128) -> str:
-    """
-    Generate entropy hex string.
-
-    :param strength: Entropy strength, default to 128.
-    :type strength: int
-
-    :returns: str -- Entropy hex string.
-
-    """
-
     if strength not in [128, 160, 192, 224, 256]:
         raise ValueError(
             "Strength should be one of the following "
@@ -85,18 +65,6 @@ def generate_entropy(strength: int = 128) -> str:
 
 
 def generate_mnemonic(language: str = "english", strength: int = 128) -> str:
-    """
-    Generate mnemonic words.
-
-    :param language: Mnemonic language, default to english.
-    :type language: str
-    :param strength: Entropy strength, default to 128.
-    :type strength: int
-
-    :returns: str -- Mnemonic words.
-
-    """
-
     if language and language not in ["english", "french", "italian", "japanese",
                                      "chinese_simplified", "chinese_traditional", "korean", "spanish"]:
         raise ValueError("invalid language, use only this options english, french, "
@@ -112,16 +80,6 @@ def generate_mnemonic(language: str = "english", strength: int = 128) -> str:
 
 
 def is_entropy(entropy: str) -> bool:
-    """
-    Check entropy hex string.
-
-    :param entropy: Mnemonic words.
-    :type entropy: str
-
-    :returns: bool -- Entropy valid/invalid.
-
-    """
-
     try:
         return len(unhexlify(entropy)) in [16, 20, 24, 28, 32]
     except:
@@ -129,18 +87,6 @@ def is_entropy(entropy: str) -> bool:
 
 
 def is_mnemonic(mnemonic: str, language: Optional[str] = None) -> bool:
-    """
-    Check mnemonic words.
-
-    :param mnemonic: Mnemonic words.
-    :type mnemonic: str
-    :param language: Mnemonic language, default to None.
-    :type language: str
-
-    :returns: bool -- Mnemonic valid/invalid.
-
-    """
-
     if language and language not in ["english", "french", "italian", "japanese",
                                      "chinese_simplified", "chinese_traditional", "korean", "spanish"]:
         raise ValueError("invalid language, use only this options english, french, "
@@ -162,16 +108,6 @@ def is_mnemonic(mnemonic: str, language: Optional[str] = None) -> bool:
 
 
 def get_entropy_strength(entropy: str) -> int:
-    """
-    Get entropy strength.
-
-    :param entropy: Entropy hex string.
-    :type entropy: str
-
-    :returns: int -- Entropy strength.
-
-    """
-
     if not is_entropy(entropy=entropy):
         raise ValueError("Invalid entropy hex string.")
 
@@ -189,18 +125,6 @@ def get_entropy_strength(entropy: str) -> int:
 
 
 def get_mnemonic_strength(mnemonic: str, language: Optional[str] = None) -> int:
-    """
-    Get mnemonic strength.
-
-    :param mnemonic: Mnemonic words.
-    :type mnemonic: str
-    :param language: Mnemonic language, default to None.
-    :type language: str
-
-    :returns: int -- Mnemonic strength.
-
-    """
-
     if not is_mnemonic(mnemonic=mnemonic, language=language):
         raise ValueError("Invalid mnemonic words.")
 
@@ -218,16 +142,6 @@ def get_mnemonic_strength(mnemonic: str, language: Optional[str] = None) -> int:
 
 
 def get_mnemonic_language(mnemonic: str) -> str:
-    """
-    Get mnemonic language.
-
-    :param mnemonic: Mnemonic words.
-    :type mnemonic: str
-
-    :returns: str -- Mnemonic language.
-
-    """
-
     if not is_mnemonic(mnemonic=mnemonic):
         raise ValueError("Invalid mnemonic words.")
 
@@ -242,18 +156,6 @@ def get_mnemonic_language(mnemonic: str) -> str:
 
 
 def entropy_to_mnemonic(entropy: str, language: str = "english") -> str:
-    """
-    Get mnemonic from entropy hex string.
-
-    :param entropy: Entropy hex string.
-    :type entropy: str
-    :param language: Mnemonic language, default to english.
-    :type language: str
-
-    :returns: str -- Mnemonic words.
-
-    """
-
     if not is_entropy(entropy=entropy):
         raise ValueError("Invalid entropy hex string.")
 
@@ -266,18 +168,6 @@ def entropy_to_mnemonic(entropy: str, language: str = "english") -> str:
 
 
 def mnemonic_to_entropy(mnemonic: str, language: Optional[str] = None) -> str:
-    """
-    Get entropy from mnemonic words.
-
-    :param mnemonic: Mnemonic words.
-    :type mnemonic: str
-    :param language: Mnemonic language, default to english.
-    :type language: str
-
-    :returns: str -- Enropy hex string.
-
-    """
-
     if not is_mnemonic(mnemonic=mnemonic, language=language):
         raise ValueError("Invalid mnemonic words.")
 
