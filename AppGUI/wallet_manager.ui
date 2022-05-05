@@ -45,7 +45,7 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>230</y>
+      <y>140</y>
       <width>141</width>
       <height>41</height>
      </rect>
@@ -62,7 +62,7 @@ color:rgb(255, 255, 255)</string>
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>340</y>
+      <y>250</y>
       <width>141</width>
       <height>41</height>
      </rect>
@@ -79,7 +79,7 @@ color:rgb(255, 255, 255)</string>
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>450</y>
+      <y>360</y>
       <width>141</width>
       <height>41</height>
      </rect>
@@ -90,6 +90,23 @@ color:rgb(255, 255, 255)</string>
     </property>
     <property name="text">
      <string>Add External Wallet</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="add_ext_wallet_btn_2">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>470</y>
+      <width>141</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:rgb(111, 5, 0);
+color:rgb(255, 255, 255)</string>
+    </property>
+    <property name="text">
+     <string>Buy/Sell Crypto</string>
     </property>
    </widget>
   </widget>

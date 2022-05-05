@@ -1,73 +1,24 @@
-import binascii
-import hashlib
 import os
-import sqlite3
 import sys
-import time
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QDialog, QApplication
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.uic import loadUi
+from auxHelp.db_actions import Actions
 
-from blockchain.infura import Infura
-from utils.email_verification import *
-from wallet import eth, btc, doge, ltc
+from auxHelp.email_verification import email_syntax, send_email_otp
+from auxHelp.models import User, WalletDetails, ExternalWallets
+from blockchain.infura import Infura, get_transactions
+from wallet.wallet_generation import generate_wallet, derive_from_wallet
+from auxHelp.secure_login import generate_qr_image
 
 path_dir: str = r"C:\Users\drago\PycharmProjects\WalletManager\AppGUI\\"
-
-
-def hash_password(password):
-    """Hash a password for storing."""
-    salt = hashlib.sha256(os.urandom(1024)).hexdigest().encode('ascii')
-    passwordhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
-                                       salt, 100000)
-    passwordhash = binascii.hexlify(passwordhash)
-    return (salt + passwordhash).decode('ascii')
-
-
-# Check hashed password validity
-def verify_password(stored_password, inserted_password):
-    """Verify a stored password against one provided by user"""
-    salt = stored_password[:64]
-    stored_password = stored_password[64:]
-    passwordhash = hashlib.pbkdf2_hmac('sha512',
-                                       inserted_password.encode('utf-8'),
-                                       salt.encode('ascii'),
-                                       100000)
-    passwordhash = binascii.hexlify(passwordhash).decode('ascii')
-    return passwordhash == stored_password
-
-
-def account_exists(email):
-    conn = sqlite3.connect("storage.db")
-    cur = conn.cursor()
-    cur.execute('SELECT email FROM login_info')
-    results_user = {result_user[0] for result_user in cur.fetchall()}
-    if email not in results_user:
-        existing_account = False
-    else:
-        existing_account = True
-    return existing_account
-
-
-def validate_login(email, password):
-    conn = sqlite3.connect("storage.db")
-    cur = conn.cursor()
-
-    query_pass = 'SELECT password FROM login_info WHERE email =\'' + email + "\'"
-    cur.execute(query_pass)
-    result_pass = cur.fetchone()[0]
-
-    if verify_password(result_pass, password):
-        pass_found = True
-    else:
-        pass_found = False
-
-    return pass_found
-
-
-def get_email(email):
-    return email
+db = Actions()
+user = User()
+wd = WalletDetails()
+ec = ExternalWallets()
+infura = Infura()
 
 
 def open_register():
@@ -88,11 +39,10 @@ def open_login():
 
 def open_otp(email):
     otp_window = OTP_window()
-    widget.addWidget(otp_window)
-    widget.setFixedWidth(603)
-    widget.setFixedHeight(397)
-    widget.setCurrentIndex(widget.currentIndex() + 1)
-    process_otp(email)
+    otp_window.setFixedWidth(603)
+    otp_window.setFixedHeight(397)
+    user.otp = send_email_otp(email)
+    otp_window.exec()
 
 
 def open_change_password():
@@ -114,81 +64,118 @@ def open_wallet_manager():
 def open_create_wallet():
     create_wallet = CreateWallet()
     widget.addWidget(create_wallet)
-    widget.setFixedWidth(791)
-    widget.setFixedHeight(511)
+    widget.setFixedWidth(588)
+    widget.setFixedHeight(488)
     widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+def open_view_addresses():
+    view_addresses = ViewAddresses()
+    widget.addWidget(view_addresses)
+    widget.setFixedWidth(970)
+    widget.setFixedHeight(510)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+def open_view_transactions():
+    view_transactions = ViewTransactions()
+    widget.addWidget(view_transactions)
+    widget.setFixedWidth(501)
+    widget.setFixedHeight(510)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+def open_add_external():
+    add_external = AddExternalWallets()
+    widget.addWidget(add_external)
+    widget.setFixedWidth(935)
+    widget.setFixedHeight(616)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+def open_generate_addresses():
+    gen_add = GenerateAddresses()
+    widget.addWidget(gen_add)
+    widget.setFixedWidth(588)
+    widget.setFixedHeight(488)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+def show_popup():
+    msg = QMessageBox()
+    msg.setWindowTitle("Scan ME!")
+    msg.setText("Scan the QR Code using the Mobile App to get the 6-digit code")
+    msg.setIconPixmap(QPixmap("C:/Users/drago/PycharmProjects/WalletManager/auxHelp/myqr.svg"))
+    msg.show()
+    msg.exec()
 
 
 class Login(QDialog):
     def __init__(self):
         super(Login, self).__init__()
         loadUi(path_dir + "login.ui", self)
+
         self.pass_field.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.login_login_btn.clicked.connect(self.login_function)
+
         self.login_noacc_btn.clicked.connect(open_register)
+
         self.login_forgot_btn.clicked.connect(open_change_password)
 
-    # Adjust logic for message display
+        self.qr_btn.clicked.connect(self.qr_2fa)
+
+        self.login_login_btn.setVisible(False)
+
+        self.login_login_btn.clicked.connect(self.login_function)
+
+    def qr_2fa(self):
+        user.email = self.email_field.text()
+        user.password = self.pass_field.text()
+        user.generated_pin = generate_qr_image(user.password)
+        show_popup()
+        self.qr_btn.setVisible(False)
+        self.login_login_btn.setVisible(True)
+
     def login_function(self):
-        email = self.email_field.text()
-        password = self.pass_field.text()
-        if len(email) == 0 or len(password) == 0:
-            self.empty_error.setText("Please enter both username and password")
+
+        user.qr_pin = self.mfa_field.text()
+
+        if len(user.email) < 1 or len(user.password) < 1 or len(user.qr_pin) < 1:
+            self.empty_error.setText("Please input all fields!!")
             self.acc_error.setText("")
             self.pass_error.setText("")
-        elif account_exists(email) is not True:
+            self.mfa_error.setText("")
+        elif db.find_user_account(user.email) is not True:
             self.acc_error.setText("Account does not exist!")
             self.empty_error.setText("")
             self.pass_error.setText("")
-        elif validate_login(email, password) is not True:
-            self.pass_error.setText("Incorrect password")
+            self.mfa_error.setText("")
+        elif db.validate_user_login(user.email, user.password) is not True:
+            self.pass_error.setText("Incorrect password!")
+            self.empty_error.setText("")
+            self.acc_error.setText("")
+            self.mfa_error.setText("")
+        if str(user.generated_pin) != user.qr_pin:
+            self.mfa_error.setText("Incorrect Pin!")
+            self.pass_error.setText("")
             self.empty_error.setText("")
             self.empty_error.setText("")
         else:
-            self.title_label.setText("Login Successful")
+            os.remove("C:/Users/drago/PycharmProjects/WalletManager/auxHelp/myqr.svg")
             open_wallet_manager()
-
-    def update_message(self):
-        self.title_label.setText("Password updated, you can login now!")
 
 
 class WalletManager(QDialog):
     def __init__(self):
         super(WalletManager, self).__init__()
         loadUi(path_dir + "wallet_manager.ui", self)
+
         self.create_wallet_btn.clicked.connect(open_create_wallet)
 
+        self.view_wallets_btn.clicked.connect(open_view_addresses)
 
-def generate_wallet(coin, wordlist_language, passphrase):
-    if coin == "Ethereum":
-        eth.generate_eth_wallet(wordlist_language, passphrase)
-    elif coin == "Litecoin":
-        ltc.generate_ltc_wallet(wordlist_language, passphrase)
-    elif coin == "Bitcoin":
-        btc.generate_btc_wallet(wordlist_language, passphrase)
-    elif coin == "Dogecoin":
-        doge.generate_doge_wallet(wordlist_language, passphrase)
+        self.add_ext_wallet_btn.clicked.connect(open_add_external)
 
-
-class CreateWallet(QDialog):
-    def __init__(self):
-        super(CreateWallet, self).__init__()
-        loadUi(path_dir + "create_wallet.ui", self)
-
-        self.generate_btn.clicked.connect(self.on_click)
-
-    def on_click(self):
-        wordlist_language = self.wordlist_combo.currentText()
-        passphrase = self.passphrase_field.text()
-        coin = self.coin_combo.currentText()
-        if coin == "Ethereum":
-            eth.generate_eth_wallet(wordlist_language.lower(), passphrase)
-        elif coin == "Litecoin":
-            ltc.generate_ltc_wallet(wordlist_language.lower(), passphrase)
-        elif coin == "Bitcoin":
-            btc.generate_btc_wallet(wordlist_language.lower(), passphrase)
-        elif coin == "Dogecoin":
-            doge.generate_doge_wallet(wordlist_language.lower(), passphrase)
+        # self.trading_view_btn.clicked.connect(open_trading_view)
 
 
 class Register(QDialog):
@@ -200,56 +187,36 @@ class Register(QDialog):
         self.register_confirm_pass_field.setEchoMode(QtWidgets.QLineEdit.Password)
         self.register_register_btn.clicked.connect(self.register_function)
 
-        conn = sqlite3.connect("storage.db")
-        cur = conn.cursor()
-
-        cur.execute("CREATE TABLE IF NOT EXISTS login_info (email TEXT, password TEXT)")
-        conn.commit()
+        db.create_user_table()
 
     def register_function(self):
-        email = self.register_email_field.text()
-        password = self.register_pass_field.text()
+        user.email = self.register_email_field.text()
+        user.password = self.register_pass_field.text()
         confirm_password = self.register_confirm_pass_field.text()
-        conn = sqlite3.connect("storage.db")
-        cur = conn.cursor()
 
-        if len(password) == 0 or len(confirm_password) == 0 or len(email) == 0:
+        if len(user.password) == 0 or len(confirm_password) == 0 or len(user.email) == 0:
             self.register_empty_error.setText("Please input all fields!")
             self.register_acc_error.setText("")
             self.register_pass_error.setText("")
             self.register_invalid_email_error.setText("")
-        elif email_syntax(email) is not True:
+        elif email_syntax(user.email) is not True:
             self.register_acc_error.setText("")
             self.register_pass_error.setText("")
             self.register_empty_error.setText("")
             self.register_invalid_email_error.setText("Email address is invalid!")
-        elif account_exists(email) is True:
+        elif db.find_user_account(user.email) is True:
             self.register_acc_error.setText("Email address already belongs to an account!")
             self.register_pass_error.setText("")
             self.register_empty_error.setText("")
             self.register_invalid_email_error.setText("")
-        elif password != confirm_password:
+        elif user.password != confirm_password:
             self.register_pass_error.setText("Passwords do not match!")
             self.register_acc_error.setText("")
             self.register_empty_error.setText("")
             self.register_invalid_email_error.setText("")
         else:
-            hashed_password = hash_password(password)
-            user_info = [email, hashed_password]
-            cur.execute('INSERT INTO login_info (email, password) VALUES (?,?)', user_info)
-            conn.commit()
-            conn.close()
-            open_otp(email)
-
-
-def process_otp(email):
-    otp = send_email_otp(email)
-    file = open("otp.txt", "w")
-    file.write(otp)
-    file.close()
-    file = open("email.txt", "w")
-    file.write(email)
-    file.close()
+            db.insert_user_table(user.email, user.password)
+            open_otp(user.email)
 
 
 class OTP_window(QDialog):
@@ -263,41 +230,24 @@ class OTP_window(QDialog):
         self.count = 0
 
     def resend_otp(self):
-        with open("email.txt", "r") as f:
-            file = f.readlines()
-            user_email = file[0]
-        process_otp(user_email)
+        user.otp = send_email_otp(user.email)
         self.timer_info_label.setText("We have resent the confirmation code")
-        time.sleep(1)
-        self.timer_info_label.setText("")
 
     def validate_otp(self):
         self.otp_inserted = self.otp_field.text()
+        self.timer_info_label.setText("")
 
-        with open("otp.txt", "r") as f:
-            file = f.readlines()
-            otp_generated = file[0]
-
-        if otp_generated == self.otp_inserted:
-            self.timer_info_label.setText("Registration complete! You are being sent to login")
-            time.sleep(5)
+        if user.otp == self.otp_inserted:
             open_login()
-            os.remove("otp.txt")
-            os.remove("email.txt")
+            self.timer_info_label.setText("Registration complete, you may close the window now!")
+
         else:
-            self.timer_info_label.setText("Invalid code")
+            self.timer_info_label.setText("Invalid code: You have " + str(3 - self.count) + " attempts left")
             self.count = self.count + 1
-            print(self.count)
 
         if self.count > 3:
             self.timer_info_label.setText("Too many attempts, go back to Register!")
-            conn = sqlite3.connect("storage.db")
-            cur = conn.cursor()
-            cur.execute('DELETE FROM login_info WHERE ROWID=(SELECT MAX(rowid) FROM login_info)')
-            conn.commit()
-            conn.close()
-            os.remove("otp.txt")
-            os.remove("email.txt")
+            db.delete_user_record()
             open_register()
 
 
@@ -305,20 +255,15 @@ class ChangePassword(QDialog):
     def __init__(self):
         super(ChangePassword, self).__init__()
         loadUi(path_dir + "update_password.ui", self)
+        user.email = self.email_field.text()
         self.new_pass_field.setEchoMode(QtWidgets.QLineEdit.Password)
         self.check_pass_field.setEchoMode(QtWidgets.QLineEdit.Password)
         self.validate_btn.clicked.connect(self.update_password)
-        self.send_btn.clicked.connect(self.send)
-
-    def send(self):
-        email = self.email_field.text()
-        process_otp(email)
+        self.send_btn.clicked.connect(send_email_otp(user.email))
 
     def compare_otp(self):
         code = self.otp_field.text()
-        with open("otp.txt", "r") as f:
-            file = f.readlines()
-            otp_generated = file[0]
+        otp_generated = user.otp
 
         if otp_generated != code:
             otp_integrity = False
@@ -330,21 +275,21 @@ class ChangePassword(QDialog):
 
     def update_password(self):
         code = self.otp_field.text()
-        email = self.email_field.text()
+        user.email = self.email_field.text()
         new_password = self.new_pass_field.text()
         check_password = self.check_pass_field.text()
 
-        if len(email) == 0 or len(new_password) == 0 or len(check_password) == 0 or len(code) == 0:
+        if len(user.email) == 0 or len(new_password) == 0 or len(check_password) == 0 or len(code) == 0:
             self.empty_error.setText("Please input all fields!")
             self.pass_error.setText("")
             self.acc_error.setText("")
             self.mfa_error.setText("")
-        elif account_exists(email) is not True:
+        elif db.find_user_account(user.email) is not True:
             self.empty_error.setText("")
             self.pass_error.setText("")
             self.acc_error.setText("Email address does not exist")
             self.mfa_error.setText("")
-        elif email_syntax(email) is not True:
+        elif email_syntax(user.email) is not True:
             self.empty_error.setText("")
             self.pass_error.setText("")
             self.acc_error.setText("")
@@ -361,31 +306,311 @@ class ChangePassword(QDialog):
             self.acc_error.setText("")
             self.mfa_error.setText("The OTP does not match!")
         else:
-            updated_pass = hash_password(new_password)
-            conn = sqlite3.connect("storage.db")
-            cur = conn.cursor()
-            query = 'UPDATE login_info SET password = ? WHERE email = ?'
-            cur.execute(query, (updated_pass, email))
-            conn.commit()
-            conn.close()
+            db.update_user_record(user.email, new_password)
 
             login = Login()
             widget.addWidget(login)
             widget.setFixedWidth(1011)
             widget.setFixedHeight(621)
             widget.setCurrentIndex(widget.currentIndex() + 1)
-            login.update_message()
+            login.update_message(message="Password updated, you can login now!")
+
+
+class CreateWallet(QDialog):
+    def __init__(self):
+        super(CreateWallet, self).__init__()
+        loadUi(path_dir + "create_wallet.ui", self)
+        self.language = ""
+        self.coin = ""
+        self.change = ""
+        number_wallets = str(db.get_number_of_wallets())
+
+        self.counter_wallets.setText("Active Wallets: " + str(number_wallets[1]))
+
+        self.generate_button.clicked.connect(self.create_wallet)
+
+        self.back_btn.clicked.connect(open_wallet_manager)
+
+    def get_options(self):
+        self.language = wd.language[self.language_comboBox.currentIndex()]
+        self.coin = wd.currency_class[self.coin_comboBox.currentText()]
+
+    def clear_input(self):
+        self.language_comboBox.setCurrentIndex(-1)
+        self.coin_comboBox.setCurrentIndex(-1)
+        self.passphrase_field.clear()
+        self.name_field.clear()
+
+    def create_wallet(self):
+        wd.passphrase = self.passphrase_field.text()
+        wd.wallet_name = self.name_field.text()
+
+        self.get_options()
+
+        try:
+            generate_wallet(self.language, wd.passphrase, self.coin, wd.account, user.email, wd.wallet_name)
+            wd.wallet_generated = "Wallet generated, derive new address now!"
+            self.clear_input()
+            open_view_addresses()
+        except:
+            wd.wallet_generated = "Wallet generation failed, try again!"
+
+
+class AddExternalWallets(QDialog):
+    def __init__(self):
+        super(AddExternalWallets, self).__init__()
+        loadUi(path_dir + "add_external_wallets.ui", self)
+        self.coin = ""
+        self.language = ""
+
+        # External Classic Use
+        self.ec_back_btn.clicked.connect(open_wallet_manager)
+
+        self.ec_add_btn.clicked.connect(self.add_external_classic_wallet)
+
+        self.ec_load_btn.clicked.connect(self.update_ec_table_view)
+
+        # External HD Use
+        self.ehd_load_btn.clicked.connect(self.update_ehd_table_view)
+
+        self.ehd_back_btn.clicked.connect(open_wallet_manager)
+
+        self.ehd_add_btn.clicked.connect(self.add_external_hd_wallet)
+
+    # External Classic Use
+    def ec_clear_fields(self):
+        self.ec_coin_field.setText("")
+        self.ec_pubk_field.setText("")
+        self.ec_privk_field.setText("")
+        self.ec_wname_field.setText("")
+
+    def add_external_classic_wallet(self):
+        db.create_external_classic_wallet()
+
+        ec.currency = self.ec_coin_field.text()
+        ec.public_key = self.ec_pubk_field.text()
+        ec.private_key = self.ec_privk_field.text()
+        ec.name = self.ec_wname_field.text()
+        db.insert_external_classic_wallet(ec.currency, ec.public_key, ec.private_key, user.email, ec.name)
+
+        data = db.get_external_classic_wallet()
+
+        self.ec_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.ec_tableWidget.insertRow(row_index)
+            self.ec_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.ec_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.ec_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            self.ec_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[3]))
+            row_index += 1
+
+        self.ec_clear_fields()
+
+    def update_ec_table_view(self):
+        data = db.get_external_classic_wallet()
+
+        self.ec_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.ec_tableWidget.insertRow(row_index)
+            self.ec_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.ec_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.ec_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            self.ec_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[3]))
+            row_index += 1
+
+    # External HD Use
+    def ehd_clear_fields(self):
+        self.ehd_wname_field.setText("")
+        self.ehd_passphrase_field.setText("")
+        self.ehd_language_comboBox.setCurrentIndex(-1)
+        self.ehd_currency_comboBox.setCurrentIndex(-1)
+
+    def add_external_hd_wallet(self):
+        db.create_external_hd_wallet()
+
+        wd.wallet_name = self.ehd_wname_field.text()
+        wd.passphrase = self.ehd_passphrase_field.text()
+        self.language = wd.language[self.ehd_language_comboBox.currentIndex()]
+        self.coin = self.ehd_currency_comboBox.currentText()
+        wd.mnemonic = self.ehd_mnemonic_field.text()
+
+        db.insert_external_hd_wallet(self.coin, wd.mnemonic, self.language, wd.passphrase,
+                                     user.email, wd.wallet_name)
+
+        data = db.get_external_hd_wallet()
+
+        self.ehd_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.ehd_tableWidget.insertRow(row_index)
+            self.ehd_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.ehd_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.ehd_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            self.ehd_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
+            row_index += 1
+
+        self.ehd_clear_fields()
+
+    def update_ehd_table_view(self):
+        data = db.get_external_hd_wallet()
+
+        self.ehd_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.ehd_tableWidget.insertRow(row_index)
+            self.ehd_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.ehd_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.ehd_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            self.ehd_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[4]))
+            row_index += 1
+
+
+class ViewAddresses(QDialog):
+    def __init__(self):
+        super(ViewAddresses, self).__init__()
+        loadUi(path_dir + "view_addresses.ui", self)
+
+        self.back_btn.clicked.connect(open_wallet_manager)
+
+        self.add_btn.clicked.connect(open_generate_addresses)
+
+        self.view_transactions_btn.clicked.connect(open_view_transactions)
+
+        self.get_view_wallets_data()
+
+        data = db.get_addresses_list()
+
+        self.lcdNumber.display("")
+
+        for i in range(len(data)):
+            self.addresses_comboBox.addItem(data[i])
+
+        self.addresses_comboBox.setCurrentIndex(-1)
+
+        self.addresses_comboBox.currentIndexChanged.connect(self.get_balance)
+
+    def get_view_wallets_data(self):
+        data = db.get_wallet_derivation()
+        self.vw_tableWidget.setRowCount(0)
+        row_index = 0
+        for row in data:
+            self.vw_tableWidget.insertRow(row_index)
+            self.vw_tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(row[0]))
+            self.vw_tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(row[1]))
+            self.vw_tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(row[2]))
+            self.vw_tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(row[3]))
+            self.vw_tableWidget.setItem(row_index, 4, QtWidgets.QTableWidgetItem(row[4]))
+            self.vw_tableWidget.setItem(row_index, 5, QtWidgets.QTableWidgetItem(row[5]))
+            self.vw_tableWidget.setItem(row_index, 6, QtWidgets.QTableWidgetItem(row[6]))
+
+            row_index += 1
+
+    def get_balance(self):
+
+        eth_value = 10 ** 18
+
+        address = self.addresses_comboBox.currentText()
+        balance = int(infura.w3.eth.get_balance(address) / eth_value)
+        self.lcdNumber.display(balance)
+
+
+class GenerateAddresses(QDialog):
+    def __init__(self):
+        super(GenerateAddresses, self).__init__()
+        loadUi(path_dir + "add_address.ui", self)
+
+        db.create_derivation_wallet()
+
+        number_acc = str(db.get_number_of_accounts())
+
+        self.counter_accounts.setText("Active Accounts: " + str(number_acc[1]))
+
+        wallet_id_options = db.get_wallet_names()
+        accounts_list_options = db.get_account_list()
+
+        if accounts_list_options == 0:
+            self.acc_comboBox.addItem(str(0))
+        else:
+            for option in accounts_list_options:
+                self.acc_comboBox.addItem(str(option))
+
+        for option in wallet_id_options:
+            self.name_comboBox.addItem(str(option))
+
+        self.back_btn.clicked.connect(open_wallet_manager)
+
+        self.generate_button.clicked.connect(self.derive_address)
+
+    def clear_input(self):
+        self.name_comboBox.setCurrentIndex(-1)
+        self.acc_comboBox.setCurrentIndex(-1)
+        self.change_comboBox.setCurrentIndex(-1)
+
+    def derive_address(self):
+        wd.wallet_name = self.name_comboBox.currentText()
+        wd.account = self.acc_comboBox.currentText()
+        wd.change = self.change_comboBox.currentIndex()
+
+        wallet = db.get_wallet_core(wd.wallet_name)
+
+        try:
+            derive_from_wallet(wallet, wd.change, wd.account, wd.currency_class[wallet['cryptocurrency']],
+                               wd.wallet_name)
+            self.clear_input()
+            open_view_addresses()
+        except:
+            print("Error")
+
+
+class ViewTransactions(QDialog):
+    def __init__(self):
+        super(ViewTransactions, self).__init__()
+        loadUi(path_dir + "view_transactions.ui", self)
+
+        data = db.get_addresses_list()
+
+        for i in range(len(data)):
+            self.addresses_comboBox.addItem(data[i])
+
+        self.addresses_comboBox.setCurrentIndex(-1)
+
+        self.addresses_comboBox.currentIndexChanged.connect(self.show_address_transaction_history)
+
+        self.back_btn.clicked.connect(open_wallet_manager)
+
+    def show_address_transaction_history(self):
+        address = self.addresses_comboBox.currentText()
+        get_transactions(address=address)
+        with open("trans.txt") as f:
+            if os.stat("trans.txt").st_size == 0:
+                self.console_text.setPlainText(address + " has no transactions - this looks like a brand new address")
+            else:
+                for line in f:
+                    self.console_text.appendPlainText(line)
+        f.close()
+        os.remove("trans.txt")
 
 
 app = QApplication(sys.argv)
-# login = Login()
+login = Login()
 widget = QtWidgets.QStackedWidget()
+cr = CreateWallet()
+mr = WalletManager()
+add = GenerateAddresses()
+# wallet = CreateWallet()  # open_create_wallet()
+# widget.addWidget(wallet)
 # widget.addWidget(login)
 widget.show()
-open_login()
+open_wallet_manager()
+# open_view_transactions()
+# open_generate_addresses()
+
+# open_login()
+# open_create_wallet()
 
 try:
     sys.exit(app.exec_())
-
 except:
     print("Exiting")

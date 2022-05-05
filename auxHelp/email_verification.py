@@ -4,11 +4,15 @@ import string
 import re
 
 from email.message import EmailMessage
+from auxHelp.models import User
+
+user = User()
 
 
 def read_credentials():
     sender = password = ""
-    with open("credentials.txt", "r") as f:
+    path = r'C:/Users/drago/PycharmProjects/WalletManager/storage/credentials.txt'
+    with open(path, "r") as f:
         file = f.readlines()
         sender = file[0].strip()
         password = file[1].strip()
@@ -17,8 +21,7 @@ def read_credentials():
 
 
 def otp_generator(size):
-    # Takes random choices from
-    # ascii_letters and digits
+    # Takes random choices from ascii_letters and digits
     generate_pass = ''.join([random.choice(string.ascii_uppercase +
                                            string.ascii_lowercase +
                                            string.digits)
@@ -37,9 +40,11 @@ def email_syntax(email):
     return email_valid
 
 
+sender, password = read_credentials()
+
+
 def send_email_otp(email):
     port = 465
-    sender, password = read_credentials()
     email_formatter = EmailMessage()
     otp = otp_generator(10)
     email_formatter['Subject'] = 'Registration Verification code'
@@ -54,5 +59,5 @@ def send_email_otp(email):
         server.login(sender, password)
         server.send_message(email_formatter)
 
-    print("sent email!")
+    print("email sent!")
     return otp
