@@ -119,7 +119,6 @@ class HDWallet:
 
     def from_mnemonic(self, mnemonic: str, language: str = None, passphrase: str = None) -> "HDWallet":
 
-
         if not is_mnemonic(mnemonic=mnemonic, language=language):
             raise ValueError("Invalid mnemonic words.")
 
