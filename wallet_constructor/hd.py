@@ -134,7 +134,6 @@ class HDWallet:
 
     def from_seed(self, seed: str) -> "HDWallet":
 
-
         self._seed = unhexlify(seed)
         self._i = hmac.new(b"Bitcoin seed", get_bytes(seed), hashlib.sha512).digest()
         il, ir = self._i[:32], self._i[32:]
@@ -156,7 +155,6 @@ class HDWallet:
         return self
 
     def from_xprivate_key(self, xprivate_key: str, strict: bool = False) -> "HDWallet":
-
 
         if not is_root_xprivate_key(xprivate_key=xprivate_key, symbol=self._cryptocurrency.SYMBOL):
             if strict:
@@ -228,7 +226,6 @@ class HDWallet:
 
     def from_wif(self, wif: str) -> "HDWallet":
 
-
         raw = check_decode(wif)[:-1]
         if not raw.startswith(_unhexlify(self._cryptocurrency.WIF_SECRET_KEY)):
             raise ValueError(f"Invalid {self.cryptocurrency()} wallet important format.")
@@ -240,7 +237,6 @@ class HDWallet:
         return self
 
     def from_private_key(self, private_key: str) -> "HDWallet":
-
 
         self._private_key = unhexlify(private_key)
         self._key = ecdsa.SigningKey.from_string(self._private_key, curve=SECP256k1)
@@ -257,7 +253,6 @@ class HDWallet:
         return self
 
     def from_path(self, path: Union[str, Derivation]) -> "HDWallet":
-
 
         if isinstance(path, Derivation):
             path = str(path)
@@ -366,7 +361,6 @@ class HDWallet:
 
     def root_xprivate_key(self, encoded: bool = True) -> Optional[str]:
 
-
         if self._semantic is None:
             return None
         version = self._cryptocurrency.EXTENDED_PRIVATE_KEY.__getattribute__(
@@ -416,7 +410,6 @@ class HDWallet:
 
     def xprivate_key(self, encoded=True) -> Optional[str]:
 
-
         if self._semantic is None:
             return None
         version = self._cryptocurrency.EXTENDED_PRIVATE_KEY.__getattribute__(
@@ -439,7 +432,6 @@ class HDWallet:
 
     def xpublic_key(self, encoded: bool = True) -> Optional[str]:
 
-
         if self._semantic is None:
             return None
         version = self._cryptocurrency.EXTENDED_PUBLIC_KEY.__getattribute__(
@@ -460,7 +452,6 @@ class HDWallet:
 
     def clean_derivation(self) -> "HDWallet":
 
-
         if self._root_private_key:
             self._path, self._path_class, self._depth, self._parent_fingerprint, self._index = (
                 "m", "m", 0, b"\0\0\0\0", 0
@@ -480,7 +471,6 @@ class HDWallet:
 
     def uncompressed(self, compressed: Optional[str] = None) -> str:
 
-
         p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
         public_key = unhexlify(compressed) if compressed else unhexlify(self.compressed())
         x = int.from_bytes(public_key[1:33], byteorder='big')
@@ -492,7 +482,6 @@ class HDWallet:
         return (public_key[1:33] + y).hex()
 
     def compressed(self, uncompressed: Optional[str] = None) -> str:
-
 
         _verified_key = ecdsa.VerifyingKey.from_string(
             unhexlify(uncompressed), curve=SECP256k1
@@ -510,7 +499,6 @@ class HDWallet:
         return hexlify(self._key.to_string()).decode() if self._key else None
 
     def public_key(self, compressed: bool = True, private_key: Optional[str] = None) -> str:
-
 
         if private_key:
             key = ecdsa.SigningKey.from_string(
@@ -699,5 +687,4 @@ class BIP44HDWallet(HDWallet):
         )
 
     def address(self) -> str:
-
         return self.p2pkh_address()

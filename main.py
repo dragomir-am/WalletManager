@@ -3,8 +3,10 @@ import sys
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
+from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox, QCompleter
 from PyQt5.uic import loadUi
+from PyQt5.uic.properties import QtCore
+
 from auxHelp.db_actions import Actions
 
 from auxHelp.email_verification import email_syntax, send_email_otp
@@ -98,6 +100,14 @@ def open_generate_addresses():
     widget.addWidget(gen_add)
     widget.setFixedWidth(588)
     widget.setFixedHeight(488)
+    widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+def open_trading_view():
+    t_view = TradingView()
+    widget.addWidget(t_view)
+    widget.setFixedWidth(1231)
+    widget.setFixedHeight(577)
     widget.setCurrentIndex(widget.currentIndex() + 1)
 
 
@@ -593,6 +603,19 @@ class ViewTransactions(QDialog):
         os.remove("trans.txt")
 
 
+class TradingView(QDialog):
+    def __init__(self):
+        super(TradingView, self).__init__()
+        loadUi(path_dir + "trading_view.ui", self)
+        names = ["Apple", "Alps", "Berry", "Cherry"]
+        completer = QCompleter(names)
+        self.watchlist_add_field.setCompleter(completer)
+
+
+
+
+
+
 app = QApplication(sys.argv)
 login = Login()
 widget = QtWidgets.QStackedWidget()
@@ -603,7 +626,8 @@ add = GenerateAddresses()
 # widget.addWidget(wallet)
 # widget.addWidget(login)
 widget.show()
-open_wallet_manager()
+#open_wallet_manager()
+open_trading_view()
 # open_view_transactions()
 # open_generate_addresses()
 
